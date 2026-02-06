@@ -169,10 +169,11 @@ class FilamentCommandsTest {
         when(filamentService.getFilamentByCode("NONEXISTENT"))
             .thenReturn(Optional.empty());
 
-        // When/Then
+        // When
         String result = filamentCommands.getFilament("NONEXISTENT");
 
-
+        // Then
+        assertThat(result).contains("not found").contains("NONEXISTENT");
         verify(filamentService, times(1)).getFilamentByCode("NONEXISTENT");
     }
 }
