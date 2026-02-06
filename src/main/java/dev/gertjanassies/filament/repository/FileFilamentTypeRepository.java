@@ -31,10 +31,14 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
             return List.of();
         }
         
-        return objectMapper.readValue(
-            filePath.toFile(), 
-            new TypeReference<List<FilamentType>>() {}
-        );
+        try {
+            return objectMapper.readValue(
+                filePath.toFile(), 
+                new TypeReference<List<FilamentType>>() {}
+            );
+        } catch (IOException e) {
+            throw new IOException("Failed to read filament types from: " + filePath, e);
+        }
     }
     
     @Override
