@@ -23,16 +23,16 @@ public class DirectoryInitializer implements CommandLineRunner {
         ensureParentDirectoryExists(typesPath);
     }
     
-    private void ensureParentDirectoryExists(String filePath) {
+    private void ensureParentDirectoryExists(String targetFilePath) {
         try {
-            Path path = Path.of(filePath);
+            Path path = Path.of(targetFilePath);
             Path parentDir = path.getParent();
             
             if (parentDir != null && !Files.exists(parentDir)) {
                 Files.createDirectories(parentDir);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create directory for: " + filePath, e);
+            throw new RuntimeException("Failed to create directory for: " + targetFilePath, e);
         }
     }
 }

@@ -52,10 +52,6 @@ public class FileFilamentRepository implements FilamentRepository {
     @Override
     public void save(List<Filament> filaments)  {
         try {
-            // Ensure parent directory exists before writing
-            if (filePath.getParent() != null && !Files.exists(filePath.getParent())) {
-                Files.createDirectories(filePath.getParent());
-            }
             objectMapper.writerWithDefaultPrettyPrinter()
             .writeValue(filePath.toFile(), filaments);
         } catch (IOException e) {
