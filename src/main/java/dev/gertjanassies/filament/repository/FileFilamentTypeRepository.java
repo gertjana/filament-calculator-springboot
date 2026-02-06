@@ -26,19 +26,23 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
         this.filePath = Path.of(configPath);
     }
     
-    private List<FilamentType> loadAll() throws IOException {
+    private List<FilamentType> loadAll() {
         if (!Files.exists(filePath)) {
             return List.of();
         }
         
-        return objectMapper.readValue(
-            filePath.toFile(), 
-            new TypeReference<List<FilamentType>>() {}
-        );
+        try {
+            return objectMapper.readValue(
+                filePath.toFile(), 
+                new TypeReference<List<FilamentType>>() {}
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read filament types from: " + filePath, e);
+        }
     }
     
     @Override
-    public Optional<FilamentType> findByType(String type) throws IOException {
+    public Optional<FilamentType> findByType(String type) {
         return loadAll().stream()
             .filter(ft -> ft.type().equalsIgnoreCase(type))
             .findFirst();

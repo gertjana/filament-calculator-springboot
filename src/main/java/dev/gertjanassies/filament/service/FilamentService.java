@@ -53,7 +53,7 @@ public class FilamentService {
             .toList();
     }
 
-    private double getDensity(String type) throws IOException {
+    private double getDensity(String type) {
         return typeRepository.findByType(type)
             .map(ft -> ft.density())
             .orElseThrow(() -> new IllegalArgumentException("Unknown filament type: " + type));

@@ -38,8 +38,7 @@ public class FileFilamentRepository implements FilamentRepository {
                 new TypeReference<List<Filament>>() {}
             );
         } catch (IOException e) {
-            System.out.println("Error reading filaments: " + e.getMessage());
-            return List.of();
+            throw new RuntimeException("Failed to read filaments from: " + filePath, e);
         }
     }
     
@@ -56,7 +55,7 @@ public class FileFilamentRepository implements FilamentRepository {
             objectMapper.writerWithDefaultPrettyPrinter()
             .writeValue(filePath.toFile(), filaments);
         } catch (IOException e) {
-            System.out.println("Error saving filaments: " + e.getMessage());
+            throw new RuntimeException("Failed to save filaments to: " + filePath, e);
         }
     }
     
