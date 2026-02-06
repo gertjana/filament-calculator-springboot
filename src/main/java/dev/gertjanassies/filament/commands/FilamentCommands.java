@@ -46,15 +46,23 @@ public class FilamentCommands {
     @ShellOption double diameter, 
     @ShellOption double price, 
     @ShellOption int weight) throws IOException {
+
     var filament = new dev.gertjanassies.filament.domain.Filament(code, type, manufacturer, diameter, color, java.math.BigDecimal.valueOf(price), weight);
-    filamentService.addFilament(filament);
+    var result = filamentService.addFilament(filament);
+
+    if (result.isEmpty()) {
+      return "Failed to add filament with code " + code;
+    }
     return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(filament);
   }
   
   @ShellMethod(key="get", value="Gets a filament by its code. Usage: get <code>")
   public String getFilament(@ShellOption String code) throws IOException {
     var filament = filamentService.getFilamentByCode(code);
-    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(filament);
+    if (filament.isEmpty()) {
+      return "Filament with code " + code + " not found.";
+    }
+    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(filament.get());
   }
 
   @ShellMethod(key="delete", value="Deletes a filament by its code. Usage: delete <code>")

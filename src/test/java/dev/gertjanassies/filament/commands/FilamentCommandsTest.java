@@ -1,22 +1,28 @@
 package dev.gertjanassies.filament.commands;
 
-import dev.gertjanassies.filament.domain.Filament;
-import dev.gertjanassies.filament.service.FilamentService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import dev.gertjanassies.filament.domain.Filament;
+import dev.gertjanassies.filament.service.FilamentService;
 
 @ExtendWith(MockitoExtension.class)
 class FilamentCommandsTest {
@@ -109,7 +115,7 @@ class FilamentCommandsTest {
     @Test
     void testGetFilament() throws IOException {
         // Given
-        when(filamentService.getFilamentByCode("TEST_PLA")).thenReturn(testFilament);
+        when(filamentService.getFilamentByCode("TEST_PLA")).thenReturn(Optional.of(testFilament));
 
         // When
         String result = filamentCommands.getFilament("TEST_PLA");
@@ -124,7 +130,7 @@ class FilamentCommandsTest {
     @Test
     void testAddFilament() throws IOException {
         // Given
-        doNothing().when(filamentService).addFilament(any(Filament.class));
+        when(filamentService.addFilament(any(Filament.class))).thenReturn(Optional.of(testFilament));
 
         // When
         String result = filamentCommands.addFilament(
@@ -147,7 +153,7 @@ class FilamentCommandsTest {
     @Test
     void testDeleteFilament() throws IOException {
         // Given
-        doNothing().when(filamentService).deleteFilament("TEST_PLA");
+        when(filamentService.deleteFilament("TEST_PLA")).thenReturn(true);
 
         // When
         String result = filamentCommands.deleteFilament("TEST_PLA");
@@ -162,14 +168,11 @@ class FilamentCommandsTest {
     void testGetFilamentNotFound() throws IOException {
         // Given
         when(filamentService.getFilamentByCode("NONEXISTENT"))
-            .thenThrow(new IllegalArgumentException("Filament not found: NONEXISTENT"));
+            .thenReturn(Optional.empty());
 
         // When/Then
-        try {
-            filamentCommands.getFilament("NONEXISTENT");
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).contains("Filament not found");
-        }
+        String result = filamentCommands.getFilament("NONEXISTENT");
+
 
         verify(filamentService, times(1)).getFilamentByCode("NONEXISTENT");
     }
