@@ -1,18 +1,20 @@
 package dev.gertjanassies.filament.repository;
 
-import dev.gertjanassies.filament.domain.Filament;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Repository;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import dev.gertjanassies.filament.domain.Filament;
+import dev.gertjanassies.filament.util.Result;
 
 @Repository
 public class FileFilamentRepository implements FilamentRepository {
@@ -27,61 +29,77 @@ public class FileFilamentRepository implements FilamentRepository {
     }
     
     @Override
-    public List<Filament> findAll() {
+    public Result<List<Filament>, String> findAll() {
         if (!Files.exists(filePath)) {
-            return List.of();
+            return new Result.Failure<>("File not found: " + filePath);
         }
         
         try {
-            return objectMapper.readValue(
+            return new Result.Success<>(objectMapper.readValue(
                 filePath.toFile(), 
                 new TypeReference<List<Filament>>() {}
-            );
+            ));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read filaments from: " + filePath, e);
+            return new Result.Failure<>("Failed to read filaments from: " + filePath);
         }
     }
     
     @Override
-    public Optional<Filament> findByCode(String code) {
-        return findAll().stream()
+public Result<Filament, String> findByCode(String code) {
+    return findAll()
+        .flatMap(filaments -> filaments.stream()
             .filter(f -> f.code().equals(code))
-            .findFirst();
-    }
+            .findFirst()
+            .<Result<Filament, String>>map(Result.Success::new)
+            .orElse(new Result.Failure<>("Filament not found: " + code))
+        );
+}
     
     @Override
-    public void save(List<Filament> filaments)  {
+    public Result<Void, String> save(List<Filament> filaments)  {
         try {
             objectMapper.writerWithDefaultPrettyPrinter()
             .writeValue(filePath.toFile(), filaments);
+            return new Result.Success<>(null);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save filaments to: " + filePath, e);
+            return new Result.Failure<>("Failed to save filaments to: " + filePath);
         }
     }
     
     @Override
-    public Optional<Filament> add(Filament filament) {
-        List<Filament> filaments = new ArrayList<>(findAll());
-        filaments.add(filament);
-        save(filaments);
-        return Optional.of(filament);
+    public Result<Filament, String> add(Filament filament) {
+        return findAll()
+            .map(filaments -> {
+                List<Filament> updated = new ArrayList<>(filaments);
+                updated.add(filament);
+                return updated;
+            })
+            .flatMap(this::save)
+            .map(v -> filament);  // Transform Void to the added Filament
     }
     
     @Override
-    public Optional<Filament> update(Filament filament) {
-        List<Filament> filaments = findAll().stream()
-            .map(f -> f.code().equals(filament.code()) ? filament : f)
-            .toList();
-        save(filaments);
-        return Optional.of(filament);
+    public Result<Filament, String> update(Filament filament) {
+        return findAll()
+            .map(filaments -> {
+                List<Filament> updated = new ArrayList<>(filaments);
+                for (int i = 0; i < updated.size(); i++) {
+                    if (updated.get(i).code().equals(filament.code())) {
+                        updated.set(i, filament);
+                        break;
+                    }
+                }
+                return updated;
+            })
+            .flatMap(this::save)
+            .map(v -> filament);  // Transform Void to the updated Filament
     }
     
     @Override
-    public boolean deleteByCode(String code) {
-        List<Filament> filaments = findAll().stream()
-            .filter(f -> !f.code().equals(code))
-            .toList();
-        save(filaments);
-        return true;
+    public Result<Void, String> deleteByCode(String code) {
+        return findAll().map(filaments -> filaments.stream()
+                .filter(f -> !f.code().equals(code))
+                .toList())
+            .flatMap(this::save);
     }
 }

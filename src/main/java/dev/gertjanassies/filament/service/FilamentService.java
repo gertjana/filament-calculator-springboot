@@ -2,7 +2,6 @@ package dev.gertjanassies.filament.service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -10,6 +9,7 @@ import dev.gertjanassies.filament.domain.CostCalculation;
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.repository.FilamentRepository;
 import dev.gertjanassies.filament.repository.FilamentTypeRepository;
+import dev.gertjanassies.filament.util.Result;
 
 @Service
 public class FilamentService {
@@ -21,36 +21,36 @@ public class FilamentService {
         this.typeRepository = typeRepository;
     }
     
-    public List<Filament> getAllFilaments() throws IOException {
+    public Result<List<Filament>, String> getAllFilaments() throws IOException {
         return repository.findAll();
     }
     
-    public Optional<Filament> getFilamentByCode(String code)  {
+    public Result<Filament, String> getFilamentByCode(String code)  {
         return repository.findByCode(code);
     }
     
-    public Optional<Filament> addFilament(Filament filament) {
+    public Result<Filament, String> addFilament(Filament filament) {
         return repository.add(filament);
     }
     
-    public Optional<Filament> updateFilament(Filament filament) {
+    public Result<Filament, String> updateFilament(Filament filament) {
         return repository.update(filament);
     }
     
-    public boolean deleteFilament(String code) throws IOException {
+    public Result<Void, String> deleteFilament(String code) throws IOException {
         return repository.deleteByCode(code);
     }
     
-    public List<Filament> findByManufacturer(String manufacturer) throws IOException {
-        return getAllFilaments().stream()
-            .filter(f -> f.manufacturer().equalsIgnoreCase(manufacturer))
-            .toList();
+    public Result<List<Filament>, String> findByManufacturer(String manufacturer) throws IOException {
+        return getAllFilaments().map(filaments ->
+            filaments.stream().filter(f -> f.manufacturer().equalsIgnoreCase(manufacturer))
+            .toList());
     }
     
-    public List<Filament> findByType(String type) throws IOException {
-        return getAllFilaments().stream()
-            .filter(f -> f.type().equalsIgnoreCase(type))
-            .toList();
+    public Result<List<Filament>, String> findByType(String type) throws IOException {
+        return getAllFilaments().map(filaments ->
+            filaments.stream().filter(f -> f.type().equalsIgnoreCase(type))
+            .toList());
     }
 
     private double getDensity(String type) {
@@ -67,14 +67,13 @@ public class FilamentService {
      * @throws IOException
      * @throws IllegalArgumentException if the filament code is not found or if the filament type is unknown
      */
-    public CostCalculation calculateCost(String code, double length) throws IOException, IllegalArgumentException {
-        var f = getFilamentByCode(code).orElseThrow(() -> new IllegalArgumentException("Filament with code " + code + " not found."));
-
-        double radiusCm = (f.size() / 2) / 10;
-        double volumeCm3 = Math.PI * Math.pow(radiusCm, 2) * (length);
-        double weightGrams = volumeCm3 * getDensity(f.type());
-        double cost = (weightGrams / f.weight()) * f.price().doubleValue();
-        
-        return new CostCalculation(code, cost, weightGrams);
+    public Result<CostCalculation, String> calculateCost(String code, double length) {
+        return getFilamentByCode(code).map(f -> {
+            double radiusCm = (f.size() / 2) / 10;
+            double volumeCm3 = Math.PI * Math.pow(radiusCm, 2) * length;
+            double weightGrams = volumeCm3 * getDensity(f.type());
+            double cost = (weightGrams / f.weight()) * f.price().doubleValue();
+            return new CostCalculation(code, cost, weightGrams);
+        });
     }
 }

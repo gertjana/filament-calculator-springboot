@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.service.FilamentService;
+import dev.gertjanassies.filament.util.Result;
 
 @ExtendWith(MockitoExtension.class)
 class FilamentCommandsTest {
@@ -55,7 +55,7 @@ class FilamentCommandsTest {
     void testListAll() throws IOException {
         // Given
         List<Filament> filaments = List.of(testFilament);
-        when(filamentService.getAllFilaments()).thenReturn(filaments);
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
 
         // When
         String result = filamentCommands.listAll();
@@ -77,7 +77,7 @@ class FilamentCommandsTest {
         
         // Unsorted list
         List<Filament> filaments = List.of(prusaPETG, colorfabbNGEN, prusaPLA, colorfabbABS);
-        when(filamentService.getAllFilaments()).thenReturn(filaments);
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
 
         // When
         String result = filamentCommands.listAll();
@@ -101,7 +101,7 @@ class FilamentCommandsTest {
     @Test
     void testListAllEmpty() throws IOException {
         // Given
-        when(filamentService.getAllFilaments()).thenReturn(List.of());
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(List.of()));
 
         // When
         String result = filamentCommands.listAll();
@@ -114,7 +114,7 @@ class FilamentCommandsTest {
     @Test
     void testGetFilament() throws IOException {
         // Given
-        when(filamentService.getFilamentByCode("TEST_PLA")).thenReturn(Optional.of(testFilament));
+        when(filamentService.getFilamentByCode("TEST_PLA")).thenReturn(new Result.Success<>(testFilament));
 
         // When
         String result = filamentCommands.getFilament("TEST_PLA");
@@ -129,7 +129,8 @@ class FilamentCommandsTest {
     @Test
     void testAddFilament() throws IOException {
         // Given
-        when(filamentService.addFilament(any(Filament.class))).thenReturn(Optional.of(testFilament));
+        Filament newFilament = new Filament("NEW_PLA", "PLA", "NewBrand", 1.75, "Red", new BigDecimal("30.00"), 750);
+        when(filamentService.addFilament(any(Filament.class))).thenReturn(new Result.Success<>(newFilament));
 
         // When
         String result = filamentCommands.addFilament(
@@ -152,7 +153,7 @@ class FilamentCommandsTest {
     @Test
     void testDeleteFilament() throws IOException {
         // Given
-        when(filamentService.deleteFilament("TEST_PLA")).thenReturn(true);
+        when(filamentService.deleteFilament("TEST_PLA")).thenReturn(new Result.Success<>(null));
 
         // When
         String result = filamentCommands.deleteFilament("TEST_PLA");
@@ -167,7 +168,7 @@ class FilamentCommandsTest {
     void testGetFilamentNotFound() throws IOException {
         // Given
         when(filamentService.getFilamentByCode("NONEXISTENT"))
-            .thenReturn(Optional.empty());
+            .thenReturn(new Result.Failure<>("Filament not found: NONEXISTENT"));
 
         // When
         String result = filamentCommands.getFilament("NONEXISTENT");

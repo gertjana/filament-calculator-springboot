@@ -2,6 +2,7 @@ package dev.gertjanassies.filament.commands;
 
 import dev.gertjanassies.filament.domain.CostCalculation;
 import dev.gertjanassies.filament.service.FilamentService;
+import dev.gertjanassies.filament.util.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +35,7 @@ class CalculateCommandTest {
     void testCalculateCost() throws Exception {
         // Given
         CostCalculation calculation = new CostCalculation("PPLA", 0.82, 24.5);
-        when(filamentService.calculateCost("PPLA", 1000.0)).thenReturn(calculation);
+        when(filamentService.calculateCost("PPLA", 1000.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
         String result = calculateCommand.calculateCost("PPLA", 1000.0);
@@ -50,7 +51,7 @@ class CalculateCommandTest {
     void testCalculateCostWithDifferentLength() throws Exception {
         // Given
         CostCalculation calculation = new CostCalculation("PPLA", 0.41, 12.25);
-        when(filamentService.calculateCost("PPLA", 500.0)).thenReturn(calculation);
+        when(filamentService.calculateCost("PPLA", 500.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
         String result = calculateCommand.calculateCost("PPLA", 500.0);
@@ -66,7 +67,7 @@ class CalculateCommandTest {
     void testCalculateCostWithZeroLength() throws Exception {
         // Given
         CostCalculation calculation = new CostCalculation("PPLA", 0.0, 0.0);
-        when(filamentService.calculateCost("PPLA", 0.0)).thenReturn(calculation);
+        when(filamentService.calculateCost("PPLA", 0.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
         String result = calculateCommand.calculateCost("PPLA", 0.0);
@@ -81,7 +82,7 @@ class CalculateCommandTest {
     void testCalculateCostFormatsCorrectly() throws Exception {
         // Given
         CostCalculation calculation = new CostCalculation("PPLA", 1.64, 49.0);
-        when(filamentService.calculateCost("PPLA", 2000.0)).thenReturn(calculation);
+        when(filamentService.calculateCost("PPLA", 2000.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
         String result = calculateCommand.calculateCost("PPLA", 2000.0);
@@ -101,15 +102,13 @@ class CalculateCommandTest {
     void testCalculateCostWithInvalidCode() throws Exception {
         // Given
         when(filamentService.calculateCost("INVALID", 1000.0))
-            .thenThrow(new IllegalArgumentException("Filament not found: INVALID"));
+            .thenReturn(new Result.Failure<>("Filament not found: INVALID"));
 
-        // When/Then
-        try {
-            calculateCommand.calculateCost("INVALID", 1000.0);
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).contains("Filament not found");
-        }
+        // When
+        String result = calculateCommand.calculateCost("INVALID", 1000.0);
 
+        // Then
+        assertThat(result).contains("Filament not found");
         verify(filamentService, times(1)).calculateCost("INVALID", 1000.0);
     }
 
@@ -117,7 +116,7 @@ class CalculateCommandTest {
     void testCalculateCostWithLargeLength() throws Exception {
         // Given
         CostCalculation calculation = new CostCalculation("CF_nGEN", 12.5, 375.0);
-        when(filamentService.calculateCost("CF_nGEN", 10000.0)).thenReturn(calculation);
+        when(filamentService.calculateCost("CF_nGEN", 10000.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
         String result = calculateCommand.calculateCost("CF_nGEN", 10000.0);
