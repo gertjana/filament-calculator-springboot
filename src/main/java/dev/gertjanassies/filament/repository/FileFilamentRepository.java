@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -45,14 +44,14 @@ public class FileFilamentRepository implements FilamentRepository {
     }
     
     @Override
-public Result<Filament, String> findByCode(String code) {
-    return findAll()
-        .flatMap(filaments -> filaments.stream()
-            .filter(f -> f.code().equals(code))
-            .findFirst()
-            .<Result<Filament, String>>map(Result.Success::new)
-            .orElse(new Result.Failure<>("Filament not found: " + code))
-        );
+    public Result<Filament, String> findByCode(String code) {
+        return findAll()
+            .flatMap(filaments -> filaments.stream()
+                .filter(f -> f.code().equals(code))
+                .findFirst()
+                .<Result<Filament, String>>map(Result.Success::new)
+                .orElse(new Result.Failure<>("Filament not found: " + code))
+            );
 }
     
     @Override

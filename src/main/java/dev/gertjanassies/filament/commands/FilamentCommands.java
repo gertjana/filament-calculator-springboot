@@ -2,18 +2,16 @@ package dev.gertjanassies.filament.commands;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.List;
 
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.service.FilamentService;
-import dev.gertjanassies.filament.util.Result;
+import dev.gertjanassies.filament.util.JsonHelper;
 
 
 @ShellComponent
@@ -28,13 +26,6 @@ public class FilamentCommands {
     this.objectMapper = objectMapper;
   } 
 
-private String toJson(Object value) {
-    try {
-        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value);
-    } catch (Exception e) {
-        return "Failed to serialize to JSON: " + e.getMessage();
-    }
-}
 
   @ShellMethod(key="list", value="Lists all filaments in the collection")
   public String listAll() throws IOException{
@@ -46,7 +37,7 @@ private String toJson(Object value) {
             .toList())
         .fold(
             error -> "Failed to retrieve filaments: " + error,
-            this::toJson
+            filaments -> JsonHelper.toJson(objectMapper, filaments)
         );
   }
 
@@ -63,7 +54,7 @@ private String toJson(Object value) {
     var filament = new Filament(code, type, manufacturer, diameter, color, java.math.BigDecimal.valueOf(price), weight);
     return filamentService.addFilament(filament).fold(
         error -> "Failed to add filament with code " + code + ": " + error,
-        this::toJson
+        value -> JsonHelper.toJson(objectMapper, filament)
     );
   }
   
@@ -71,7 +62,7 @@ private String toJson(Object value) {
   public String getFilament(@ShellOption String code) throws IOException {
     return filamentService.getFilamentByCode(code).fold(
        error -> "Failed to get filament with code " + code + ": " + error,
-       this::toJson
+       value -> JsonHelper.toJson(objectMapper, value)
     );
   }
 

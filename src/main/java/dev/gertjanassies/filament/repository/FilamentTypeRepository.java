@@ -1,9 +1,8 @@
 package dev.gertjanassies.filament.repository;
 
-import java.util.Optional;
-
 import dev.gertjanassies.filament.domain.FilamentType;
+import dev.gertjanassies.filament.util.Result;
 
 public interface FilamentTypeRepository {
-    Optional<FilamentType> findByType(String type);
+    Result<FilamentType, String> findByType(String type);
 }

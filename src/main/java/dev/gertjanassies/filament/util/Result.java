@@ -62,8 +62,8 @@ public sealed interface Result<T, E> permits Result.Success, Result.Failure {
      */
     default <U> Result<U, E> map(Function<T, U> mapper) {
         return switch (this) {
-            case Success<T, E>(T value) -> new Success<>(mapper.apply(value));
-            case Failure<T, E>(E error) -> new Failure<>(error);
+            case Success(var value) -> new Success<>(mapper.apply(value));
+            case Failure(var error) -> new Failure<>(error);
         };
     }
     

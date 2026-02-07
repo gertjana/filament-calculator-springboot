@@ -7,6 +7,7 @@ import org.springframework.shell.standard.ShellOption;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.gertjanassies.filament.service.FilamentService;
+import dev.gertjanassies.filament.util.JsonHelper;
 
 @ShellComponent
 public class CalculateCommand {
@@ -19,12 +20,13 @@ public class CalculateCommand {
     this.objectMapper = objectMapper;
   } 
 
-
   @ShellMethod(key="calculate", value="Calculates the costs for a print. Usage: calculate <code> <length in cm>")
   public String calculateCost(
     @ShellOption String code,
     @ShellOption double length) throws Exception {
-    var result = filamentService.calculateCost(code, length);
-    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    return filamentService.calculateCost(code, length).fold(  
+      error -> "Failed to calculate cost for filament with code " + code + ": " + error,
+      value -> JsonHelper.toJson(objectMapper, value)
+    );
   }
 }

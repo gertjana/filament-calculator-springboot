@@ -53,10 +53,9 @@ public class FilamentService {
             .toList());
     }
 
-    private double getDensity(String type) {
+    private Result<Double, String> getDensity(String type) {
         return typeRepository.findByType(type)
-            .map(ft -> ft.density())
-            .orElseThrow(() -> new IllegalArgumentException("Unknown filament type: " + type));
+            .map(ft -> ft.density());
     }
 
     /**
@@ -64,16 +63,26 @@ public class FilamentService {
      * @param code of the filament
      * @param length in cm
      * @return cost in the same currency as the filament price
-     * @throws IOException
-     * @throws IllegalArgumentException if the filament code is not found or if the filament type is unknown
      */
     public Result<CostCalculation, String> calculateCost(String code, double length) {
-        return getFilamentByCode(code).map(f -> {
-            double radiusCm = (f.size() / 2) / 10;
-            double volumeCm3 = Math.PI * Math.pow(radiusCm, 2) * length;
-            double weightGrams = volumeCm3 * getDensity(f.type());
-            double cost = (weightGrams / f.weight()) * f.price().doubleValue();
-            return new CostCalculation(code, cost, weightGrams);
-        });
+        return getFilamentByCode(code).flatMap(f -> 
+                    getDensity(f.type()).map(density -> {
+                        double radiusCm = (f.size() / 2) / 10;
+                        double volumeCm3 = Math.PI * Math.pow(radiusCm, 2) * length;
+                        double weightGrams = volumeCm3 * density;
+                        double cost = (weightGrams / f.weight()) * f.price().doubleValue();
+                        return new CostCalculation(code, cost, weightGrams);
+                    })
+                );
     }
+    /*. Scala ZIO-like
+        for {
+            filament <- getFilamentByCode(code)
+            density <- getDensity(filament.`type`)
+            radiusCm = (filament.size / 2) / 10
+            volumeCm3 = Math.PI * Math.pow(radiusCm, 2) * length
+            weightGrams = volumeCm3 * density
+            cost = (weightGrams / filament.weight) * filament.price.doubleValue()
+        } yield CostCalculation(code, cost, weightGrams)    
+    */
 }

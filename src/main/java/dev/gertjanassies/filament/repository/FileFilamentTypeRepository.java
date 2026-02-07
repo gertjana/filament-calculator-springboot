@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.gertjanassies.filament.domain.FilamentType;
+import dev.gertjanassies.filament.util.Result;
 
 @Repository
 public class FileFilamentTypeRepository implements FilamentTypeRepository {
@@ -26,25 +27,29 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
         this.filePath = Path.of(configPath);
     }
     
-    private List<FilamentType> loadAll() {
+    private Result<List<FilamentType>, String> loadAll() {
         if (!Files.exists(filePath)) {
-            return List.of();
+            return new Result.Failure<List<FilamentType>, String>("File not found: " + filePath);
         }
         
         try {
-            return objectMapper.readValue(
+            var filamentTypes = objectMapper.readValue(
                 filePath.toFile(), 
                 new TypeReference<List<FilamentType>>() {}
             );
+            return new Result.Success<>(filamentTypes);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read filament types from: " + filePath, e);
+            return new Result.Failure<>("Failed to read filament types from: " + filePath);
         }
-    }
+   }
     
     @Override
-    public Optional<FilamentType> findByType(String type) {
-        return loadAll().stream()
-            .filter(ft -> ft.type().equalsIgnoreCase(type))
-            .findFirst();
+    public Result<FilamentType, String> findByType(String type) {
+        return loadAll().map(filamentTypes ->
+            filamentTypes.stream()
+                .filter(ft -> ft.type().equalsIgnoreCase(type))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Filament type not found: " + type))
+        );
     }
 }
