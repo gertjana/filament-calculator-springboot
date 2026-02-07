@@ -16,18 +16,18 @@ import dev.gertjanassies.filament.domain.FilamentType;
  */
 public class FilamentRuntimeHints implements RuntimeHintsRegistrar {
 
+    private static final MemberCategory[] JACKSON_MEMBER_CATEGORIES = {
+        MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+        MemberCategory.INVOKE_DECLARED_METHODS,
+        MemberCategory.DECLARED_FIELDS
+    };
+
     @Override
     public void registerHints(@NonNull RuntimeHints hints, @Nullable ClassLoader classLoader) {
         // Register record classes for reflection (needed for Jackson serialization)
         hints.reflection()
-            .registerType(Filament.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                                          MemberCategory.INVOKE_DECLARED_METHODS,
-                                          MemberCategory.DECLARED_FIELDS)
-            .registerType(CostCalculation.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                                                 MemberCategory.INVOKE_DECLARED_METHODS,
-                                                 MemberCategory.DECLARED_FIELDS)
-            .registerType(FilamentType.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                                              MemberCategory.INVOKE_DECLARED_METHODS,
-                                              MemberCategory.DECLARED_FIELDS);
+            .registerType(Filament.class, JACKSON_MEMBER_CATEGORIES)
+            .registerType(CostCalculation.class, JACKSON_MEMBER_CATEGORIES)
+            .registerType(FilamentType.class, JACKSON_MEMBER_CATEGORIES);
     }
 }
