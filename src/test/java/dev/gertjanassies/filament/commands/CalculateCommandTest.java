@@ -3,8 +3,6 @@ package dev.gertjanassies.filament.commands;
 import dev.gertjanassies.filament.domain.CostCalculation;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.Result;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,15 +18,11 @@ class CalculateCommandTest {
     @Mock
     private FilamentService filamentService;
 
-    private ObjectMapper objectMapper;
-
     private CalculateCommand calculateCommand;
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        calculateCommand = new CalculateCommand(filamentService, objectMapper);
+        calculateCommand = new CalculateCommand(filamentService);
     }
 
     @Test
@@ -89,9 +83,9 @@ class CalculateCommandTest {
 
         // Then
         assertThat(result).isNotEmpty();
-        assertThat(result).contains("code");
-        assertThat(result).contains("cost");
-        assertThat(result).contains("weight");
+        assertThat(result).contains("Filament Code");
+        assertThat(result).contains("Cost");
+        assertThat(result).contains("Weight");
         assertThat(result).contains("PPLA");
         assertThat(result).contains("1.64");
         assertThat(result).contains("49.0");

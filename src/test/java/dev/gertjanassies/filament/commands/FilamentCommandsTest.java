@@ -16,9 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.Result;
@@ -29,17 +26,13 @@ class FilamentCommandsTest {
     @Mock
     private FilamentService filamentService;
 
-    private ObjectMapper objectMapper;
-
     private FilamentCommands filamentCommands;
 
     private Filament testFilament;
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        filamentCommands = new FilamentCommands(filamentService, objectMapper);
+        filamentCommands = new FilamentCommands(filamentService);
         testFilament = new Filament(
             "TEST_PLA",
             "PLA",
@@ -107,7 +100,7 @@ class FilamentCommandsTest {
         String result = filamentCommands.listAll();
 
         // Then
-        assertThat(result).isEqualTo("[ ]");
+        assertThat(result).isEqualTo("No filaments found.");
         verify(filamentService, times(1)).getAllFilaments();
     }
 
