@@ -1,6 +1,5 @@
 package dev.gertjanassies.filament.repository;
 
-import java.io.IOException;
 import java.util.List;
 
 import dev.gertjanassies.filament.domain.Filament;
@@ -30,7 +29,7 @@ public interface FilamentRepository {
      * @return A Result indicating success or failure of the save operation.
      */
 
-    Result<Void, String> save(List<Filament> filaments) throws IOException;
+    Result<Void, String> save(List<Filament> filaments);
     /**
      * Add a new filament to the repository.
      * @param filament

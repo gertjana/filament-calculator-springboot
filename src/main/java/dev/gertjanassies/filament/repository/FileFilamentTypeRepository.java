@@ -1,11 +1,9 @@
 package dev.gertjanassies.filament.repository;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
-
+    
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -29,27 +27,26 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
     
     private Result<List<FilamentType>, String> loadAll() {
         if (!Files.exists(filePath)) {
-            return new Result.Failure<List<FilamentType>, String>("File not found: " + filePath);
+            return new Result.Failure<>("File not found: " + filePath);
         }
         
-        try {
-            var filamentTypes = objectMapper.readValue(
+        return Result.of(
+            () -> objectMapper.readValue(
                 filePath.toFile(), 
                 new TypeReference<List<FilamentType>>() {}
-            );
-            return new Result.Success<>(filamentTypes);
-        } catch (IOException e) {
-            return new Result.Failure<>("Failed to read filament types from: " + filePath);
-        }
+            ),
+            e -> "Failed to read filament types from " + filePath + ": " + e.getMessage()
+        );
    }
     
     @Override
     public Result<FilamentType, String> findByType(String type) {
-        return loadAll().map(filamentTypes ->
-            filamentTypes.stream()
+        return loadAll().flatMap(filamentTypes -> {
+            return filamentTypes.stream()
                 .filter(ft -> ft.type().equalsIgnoreCase(type))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Filament type not found: " + type))
-        );
+                .<Result<FilamentType, String>>map(Result.Success::new)
+                .orElse(new Result.Failure<>("Filament type not found: " + type));
+        });
     }
 }

@@ -1,6 +1,6 @@
 package dev.gertjanassies.filament.commands;
 
-import java.io.IOException;
+// import java.io.IOException;
 import java.util.Comparator;
 
 import org.springframework.shell.standard.ShellComponent;
@@ -28,7 +28,7 @@ public class FilamentCommands {
 
 
   @ShellMethod(key="list", value="Lists all filaments in the collection")
-  public String listAll() throws IOException{
+  public String listAll(){
     //TODO move sorting to service layer
     return filamentService.getAllFilaments()
         .map(filaments -> filaments.stream()
@@ -49,7 +49,7 @@ public class FilamentCommands {
     @ShellOption String color, 
     @ShellOption double diameter, 
     @ShellOption double price, 
-    @ShellOption int weight) throws IOException {
+    @ShellOption int weight) {
 
     var filament = new Filament(code, type, manufacturer, diameter, color, java.math.BigDecimal.valueOf(price), weight);
     return filamentService.addFilament(filament).fold(
@@ -59,7 +59,7 @@ public class FilamentCommands {
   }
   
   @ShellMethod(key="get", value="Gets a filament by its code. Usage: get <code>")
-  public String getFilament(@ShellOption String code) throws IOException {
+  public String getFilament(@ShellOption String code) {
     return filamentService.getFilamentByCode(code).fold(
        error -> "Failed to get filament with code " + code + ": " + error,
        value -> JsonHelper.toJson(objectMapper, value)
@@ -67,7 +67,7 @@ public class FilamentCommands {
   }
 
   @ShellMethod(key="delete", value="Deletes a filament by its code. Usage: delete <code>")
-  public String deleteFilament(@ShellOption String code) throws IOException {
+  public String deleteFilament(@ShellOption String code) {
     return filamentService.deleteFilament(code).fold(
         error -> error,
         value -> "Filament deleted successfully: " + code

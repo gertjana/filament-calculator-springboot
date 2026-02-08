@@ -23,7 +23,7 @@ public class CalculateCommand {
   @ShellMethod(key="calculate", value="Calculates the costs for a print. Usage: calculate <code> <length in cm>")
   public String calculateCost(
     @ShellOption String code,
-    @ShellOption double length) throws Exception {
+    @ShellOption double length) {
     return filamentService.calculateCost(code, length).fold(  
       error -> "Failed to calculate cost for filament with code " + code + ": " + error,
       value -> JsonHelper.toJson(objectMapper, value)

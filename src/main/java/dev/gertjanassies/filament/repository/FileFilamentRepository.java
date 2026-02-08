@@ -1,6 +1,5 @@
 package dev.gertjanassies.filament.repository;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,21 +25,21 @@ public class FileFilamentRepository implements FilamentRepository {
         this.objectMapper = objectMapper;
         this.filePath = Path.of(configPath);
     }
-    
+
     @Override
     public Result<List<Filament>, String> findAll() {
         if (!Files.exists(filePath)) {
             return new Result.Failure<>("File not found: " + filePath);
         }
         
-        try {
-            return new Result.Success<>(objectMapper.readValue(
+        return Result.of(
+            () -> objectMapper.readValue(
                 filePath.toFile(), 
                 new TypeReference<List<Filament>>() {}
-            ));
-        } catch (IOException e) {
-            return new Result.Failure<>("Failed to read filaments from: " + filePath);
-        }
+            ),
+            e -> "Failed to read filaments from: " + filePath + ": " + e.getMessage()       
+            
+        );
     }
     
     @Override
@@ -56,13 +55,14 @@ public class FileFilamentRepository implements FilamentRepository {
     
     @Override
     public Result<Void, String> save(List<Filament> filaments)  {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter()
-            .writeValue(filePath.toFile(), filaments);
-            return new Result.Success<>(null);
-        } catch (IOException e) {
-            return new Result.Failure<>("Failed to save filaments to: " + filePath);
-        }
+        return Result.of(
+            () -> {
+                objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValue(filePath.toFile(), filaments);
+                return null; // Return type is Void, so we return null on success
+            },
+            e -> "Failed to save filaments to " + filePath + ": " + e.getMessage()
+        );
     }
     
     @Override

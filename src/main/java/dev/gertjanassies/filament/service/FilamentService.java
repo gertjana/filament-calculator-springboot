@@ -1,6 +1,5 @@
 package dev.gertjanassies.filament.service;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class FilamentService {
         this.typeRepository = typeRepository;
     }
     
-    public Result<List<Filament>, String> getAllFilaments() throws IOException {
+    public Result<List<Filament>, String> getAllFilaments() {
         return repository.findAll();
     }
     
@@ -37,17 +36,17 @@ public class FilamentService {
         return repository.update(filament);
     }
     
-    public Result<Void, String> deleteFilament(String code) throws IOException {
+    public Result<Void, String> deleteFilament(String code) {
         return repository.deleteByCode(code);
     }
     
-    public Result<List<Filament>, String> findByManufacturer(String manufacturer) throws IOException {
+    public Result<List<Filament>, String> findByManufacturer(String manufacturer) {
         return getAllFilaments().map(filaments ->
             filaments.stream().filter(f -> f.manufacturer().equalsIgnoreCase(manufacturer))
             .toList());
     }
     
-    public Result<List<Filament>, String> findByType(String type) throws IOException {
+    public Result<List<Filament>, String> findByType(String type) {
         return getAllFilaments().map(filaments ->
             filaments.stream().filter(f -> f.type().equalsIgnoreCase(type))
             .toList());
@@ -75,7 +74,7 @@ public class FilamentService {
                     })
                 );
     }
-    /*. Scala ZIO-like
+    /*. Scala ZIO does it like this: (which is syntactic sugar for nested flatMaps and maps)
         for {
             filament <- getFilamentByCode(code)
             density <- getDensity(filament.`type`)
