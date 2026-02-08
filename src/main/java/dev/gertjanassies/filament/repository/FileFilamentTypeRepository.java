@@ -1,11 +1,9 @@
 package dev.gertjanassies.filament.repository;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
-
+    
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.gertjanassies.filament.domain.FilamentType;
+import dev.gertjanassies.filament.util.Result;
 
 @Repository
 public class FileFilamentTypeRepository implements FilamentTypeRepository {
@@ -26,25 +25,28 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
         this.filePath = Path.of(configPath);
     }
     
-    private List<FilamentType> loadAll() {
+    private Result<List<FilamentType>, String> loadAll() {
         if (!Files.exists(filePath)) {
-            return List.of();
+            return new Result.Failure<>("File not found: " + filePath);
         }
         
-        try {
-            return objectMapper.readValue(
+        return Result.of(
+            () -> objectMapper.readValue(
                 filePath.toFile(), 
                 new TypeReference<List<FilamentType>>() {}
-            );
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read filament types from: " + filePath, e);
-        }
-    }
+            ),
+            e -> "Failed to read filament types from " + filePath + ": " + e.getMessage()
+        );
+   }
     
     @Override
-    public Optional<FilamentType> findByType(String type) {
-        return loadAll().stream()
-            .filter(ft -> ft.type().equalsIgnoreCase(type))
-            .findFirst();
+    public Result<FilamentType, String> findByType(String type) {
+        return loadAll().flatMap(filamentTypes -> {
+            return filamentTypes.stream()
+                .filter(ft -> ft.type().equalsIgnoreCase(type))
+                .findFirst()
+                .<Result<FilamentType, String>>map(Result.Success::new)
+                .orElse(new Result.Failure<>("Filament type not found: " + type));
+        });
     }
 }
