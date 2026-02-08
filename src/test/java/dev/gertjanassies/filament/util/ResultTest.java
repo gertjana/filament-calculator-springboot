@@ -489,6 +489,7 @@ class ResultTest {
         assertThat(result.error()).isNotNull();
     }
 
+    @SuppressWarnings("unused")
     @Test
     void testAttemptWithCheckedExceptionIOException() {
         // When
