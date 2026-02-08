@@ -1,17 +1,19 @@
 package dev.gertjanassies.filament.commands;
 
-// import java.io.IOException;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.shell.table.ArrayTableModel;
+import org.springframework.shell.table.BorderStyle;
+import org.springframework.shell.table.TableBuilder;
+import org.springframework.shell.table.TableModel;
 
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.service.FilamentService;
-import dev.gertjanassies.filament.util.JsonHelper;
 
 
 @ShellComponent
@@ -19,12 +21,57 @@ public class FilamentCommands {
 
   
   private final FilamentService filamentService;
-  private final ObjectMapper objectMapper;
   
-   FilamentCommands(FilamentService filamentService, ObjectMapper objectMapper) {
+   FilamentCommands(FilamentService filamentService) {
     this.filamentService = filamentService;
-    this.objectMapper = objectMapper;
   } 
+
+  private String formatFilamentsTable(List<Filament> filaments) {
+    if (filaments.isEmpty()) {
+      return "No filaments found.";
+    }
+
+    String[][] data = new String[filaments.size() + 1][7];
+    data[0] = new String[] {"Code", "Manufacturer", "Type", "Color", "Diameter", "Price", "Weight"};
+    
+    for (int i = 0; i < filaments.size(); i++) {
+      Filament f = filaments.get(i);
+      data[i + 1] = new String[] {
+        f.code(),
+        f.manufacturer(),
+        f.type(),
+        f.color(),
+        String.format("%.2f mm", f.size()),
+        String.format("€%.2f", f.price()),
+        f.weight() + "g"
+      };
+    }
+
+    TableModel model = new ArrayTableModel(data);
+    TableBuilder tableBuilder = new TableBuilder(model);
+    return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(80);
+  }
+
+  private String formatFilamentTable(Filament f) {
+    LinkedHashMap<String, String> data = new LinkedHashMap<>();
+    data.put("Code", f.code());
+    data.put("Manufacturer", f.manufacturer());
+    data.put("Type", f.type());
+    data.put("Color", f.color());
+    data.put("Diameter", String.format("%.2f mm", f.size()));
+    data.put("Price", String.format("€%.2f", f.price()));
+    data.put("Weight", f.weight() + "g");
+
+    String[][] tableData = new String[data.size()][2];
+    int i = 0;
+    for (var entry : data.entrySet()) {
+      tableData[i++] = new String[] {entry.getKey(), entry.getValue()};
+    }
+
+    TableModel model = new ArrayTableModel(tableData);
+    TableBuilder tableBuilder = new TableBuilder(model);
+    return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(50);
+  }
 
 
   @ShellMethod(key="list", value="Lists all filaments in the collection")
@@ -37,7 +84,7 @@ public class FilamentCommands {
             .toList())
         .fold(
             error -> "Failed to retrieve filaments: " + error,
-            filaments -> JsonHelper.toJson(objectMapper, filaments)
+            this::formatFilamentsTable
         );
   }
 
@@ -54,7 +101,7 @@ public class FilamentCommands {
     var filament = new Filament(code, type, manufacturer, diameter, color, java.math.BigDecimal.valueOf(price), weight);
     return filamentService.addFilament(filament).fold(
         error -> "Failed to add filament with code " + code + ": " + error,
-        value -> JsonHelper.toJson(objectMapper, filament)
+        value -> "Filament added successfully:\n" + formatFilamentTable(value)
     );
   }
   
@@ -62,7 +109,7 @@ public class FilamentCommands {
   public String getFilament(@ShellOption String code) {
     return filamentService.getFilamentByCode(code).fold(
        error -> "Failed to get filament with code " + code + ": " + error,
-       value -> JsonHelper.toJson(objectMapper, value)
+       this::formatFilamentTable
     );
   }
 
@@ -74,4 +121,3 @@ public class FilamentCommands {
     );
   }     
 }
-
