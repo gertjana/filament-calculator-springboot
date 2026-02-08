@@ -57,6 +57,16 @@ public sealed interface Result<T, E> permits Result.Success, Result.Failure {
         }
     }
 
+    /** 
+     * Convenience method for creating a Result from a supplier that may throw checked exceptions, using the exception as the error.
+      * @param supplier The code to execute (may throw checked exceptions)
+      * @param <T> The type of the successful result
+      * @return A Success containing the result, or a Failure containing the exception
+     */
+    static <T> Result<T, Exception> of(ThrowingSupplier<T> supplier) {
+        return of(supplier, e -> e);
+    }
+
     /**
      * Check if the result is a success. 
      * @return true if this is a Success, false otherwise

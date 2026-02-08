@@ -520,18 +520,17 @@ class ResultTest {
     }
 
     @Test
-    void testOfWithCheckedExceptionCustomMapping() {
+    void testOfWithCheckedException() {
         // When
-        Result<String, Integer> result = Result.of(
+        Result<String, Exception> result = Result.of(
             () -> {
                 throw new IOException("Disk full");
-            },
-            e -> e.getMessage().length()
+            }
         );
 
         // Then
         assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).isEqualTo(9); // "Disk full" length
+        assertThat(result.error()).isInstanceOf(IOException.class);
     }
 
     @Test
