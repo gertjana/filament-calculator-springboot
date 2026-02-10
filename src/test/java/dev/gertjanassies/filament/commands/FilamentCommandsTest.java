@@ -60,15 +60,19 @@ class FilamentCommandsTest {
         // Given
         List<Filament> filaments = List.of(testFilament);
         when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
-        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
+        when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
 
         // When
         String result = filamentCommands.listAll();
 
         // Then
-        assertThat(result).containsPattern("(?m)^\\s*1\\s+Blue\\b");
+        assertThat(result).contains("ID");
+        assertThat(result).contains("1");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PLA");
+        assertThat(result).contains("Manufacturer");
         assertThat(result).contains("TestBrand");
+        assertThat(result).contains("Color");
         assertThat(result).contains("Blue");
         verify(filamentService, times(1)).getAllFilaments();
     }
@@ -96,9 +100,13 @@ class FilamentCommandsTest {
         String result = filamentCommands.getFilament(1);
 
         // Then
+        assertThat(result).contains("ID");
         assertThat(result).contains("1");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PLA");
+        assertThat(result).contains("Color");
         assertThat(result).contains("Blue");
+        assertThat(result).contains("Price");
         assertThat(result).contains("25.00");
         verify(filamentService, times(1)).getFilamentById(1);
     }
@@ -119,8 +127,12 @@ class FilamentCommandsTest {
         );
 
         // Then
+        assertThat(result).contains("successfully");
+        assertThat(result).contains("ID");
         assertThat(result).contains("2");
+        assertThat(result).contains("Color");
         assertThat(result).contains("Red");
+        assertThat(result).contains("Manufacturer");
         assertThat(result).contains("TestBrand");
         verify(filamentService, times(1)).addFilament(any(Filament.class));
     }
@@ -134,6 +146,7 @@ class FilamentCommandsTest {
         String result = filamentCommands.deleteFilament(1);
 
         // Then
+        assertThat(result).contains("successfully");
         assertThat(result).contains("deleted");
         assertThat(result).contains("1");
         verify(filamentService, times(1)).deleteFilament(1);

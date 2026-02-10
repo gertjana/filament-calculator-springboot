@@ -35,8 +35,11 @@ class CalculateCommandTest {
         String result = calculateCommand.calculateCost(1, 1000.0);
 
         // Then
+        assertThat(result).contains("Filament ID");
         assertThat(result).contains("1");
+        assertThat(result).contains("Weight");
         assertThat(result).contains("0.82");
+        assertThat(result).contains("Cost");
         assertThat(result).contains("24.5");
         verify(filamentService, times(1)).calculateCost(1, 1000.0);
     }
@@ -51,8 +54,11 @@ class CalculateCommandTest {
         String result = calculateCommand.calculateCost(1, 500.0);
 
         // Then
+        assertThat(result).contains("Filament ID");
         assertThat(result).contains("1");
+        assertThat(result).contains("Weight");
         assertThat(result).contains("0.41");
+        assertThat(result).contains("Cost");
         assertThat(result).contains("12.25");
         verify(filamentService, times(1)).calculateCost(1, 500.0);
     }
@@ -67,8 +73,11 @@ class CalculateCommandTest {
         String result = calculateCommand.calculateCost(1, 0.0);
 
         // Then
+        assertThat(result).contains("Filament ID");
         assertThat(result).contains("1");
+        assertThat(result).contains("Weight");
         assertThat(result).contains("0.0");
+        assertThat(result).contains("Cost");
         verify(filamentService, times(1)).calculateCost(1, 0.0);
     }
 
@@ -116,8 +125,11 @@ class CalculateCommandTest {
         String result = calculateCommand.calculateCost(2, 10000.0);
 
         // Then
+        assertThat(result).contains("Filament ID");
         assertThat(result).contains("2");
+        assertThat(result).contains("Weight");
         assertThat(result).contains("12.5");
+        assertThat(result).contains("Cost");
         assertThat(result).contains("375.0");
         verify(filamentService, times(1)).calculateCost(2, 10000.0);
     }

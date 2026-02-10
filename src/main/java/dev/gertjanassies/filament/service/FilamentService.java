@@ -33,6 +33,10 @@ public class FilamentService {
         return typeRepository.findById(id);
     }
     
+    public Result<List<FilamentType>, String> getAllFilamentTypes() {
+        return typeRepository.findAll();
+    }
+    
     public Result<Filament, String> addFilament(Filament filament) {
         return filamentRepository.add(filament);
     }

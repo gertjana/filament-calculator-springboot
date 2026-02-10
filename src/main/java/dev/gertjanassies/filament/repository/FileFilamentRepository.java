@@ -87,6 +87,7 @@ public class FileFilamentRepository implements FilamentRepository {
                 List<Filament> updated = new ArrayList<>(filaments);
                 updated.add(newFilament);
                 
+                // Save and return the new filament directly
                 return save(updated).map(v -> newFilament);
             });
     }
@@ -94,15 +95,20 @@ public class FileFilamentRepository implements FilamentRepository {
     @Override
     public Result<Filament, String> update(Filament filament) {
         return findAll()
-            .map(filaments -> {
+            .flatMap(filaments -> {
                 List<Filament> updated = new ArrayList<>(filaments);
+                boolean found = false;
                 for (int i = 0; i < updated.size(); i++) {
                     if (updated.get(i).id() == filament.id()) {
                         updated.set(i, filament);
+                        found = true;
                         break;
                     }
                 }
-                return updated;
+                if (!found) {
+                    return new Result.Failure<>("Filament not found: " + filament.id());
+                }
+                return new Result.Success<>(updated);
             })
             .flatMap(this::save)
             .map(v -> filament);  // Transform Void to the updated Filament
