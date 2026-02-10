@@ -170,4 +170,169 @@ class FilamentCommandsTest {
         assertThat(result).contains("not found").contains("999");
         verify(filamentService, times(1)).getFilamentById(999);
     }
+
+    @Test
+    void testListAll_JsonOutput() throws IOException {
+        // Given
+        List<Filament> filaments = List.of(testFilament);
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
+        when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
+
+        // When
+        String result = filamentCommands.listAll(OutputFormat.JSON);
+
+        // Then
+        assertThat(result).contains("\"id\" : 1");
+        assertThat(result).contains("\"color\" : \"Blue\"");
+        assertThat(result).contains("\"price\" : 25.00");
+        assertThat(result).contains("\"weight\" : 1000");
+        // Verify nested filamentType object
+        assertThat(result).contains("\"filamentType\"");
+        assertThat(result).contains("\"name\" : \"Test PLA\"");
+        assertThat(result).contains("\"manufacturer\" : \"TestBrand\"");
+        assertThat(result).contains("\"type\" : \"PLA\"");
+        assertThat(result).contains("\"diameter\" : 1.75");
+        assertThat(result).contains("\"nozzleTemp\" : \"190-220\"");
+        assertThat(result).contains("\"bedTemp\" : \"50-60\"");
+        assertThat(result).contains("\"density\" : 1.24");
+        verify(filamentService, times(1)).getAllFilaments();
+        verify(filamentService, times(1)).getAllFilamentTypes();
+    }
+
+    @Test
+    void testListAll_JsonOutput_Empty() throws IOException {
+        // Given
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(List.of()));
+
+        // When
+        String result = filamentCommands.listAll(OutputFormat.JSON);
+
+        // Then
+        assertThat(result).isEqualTo("No filaments found.");
+        verify(filamentService, times(1)).getAllFilaments();
+    }
+
+    @Test
+    void testListAll_CsvOutput() throws IOException {
+        // Given
+        List<Filament> filaments = List.of(testFilament);
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
+        when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
+
+        // When
+        String result = filamentCommands.listAll(OutputFormat.CSV);
+
+        // Then
+        // Verify CSV headers
+        assertThat(result).contains("ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight");
+        // Verify CSV row content
+        assertThat(result).contains("1,Test PLA,TestBrand,PLA,1.75 mm,190-220°C,50-60°C,1.24,Blue,€25.00,1000g");
+        verify(filamentService, times(1)).getAllFilaments();
+        verify(filamentService, times(1)).getAllFilamentTypes();
+    }
+
+    @Test
+    void testListAll_CsvOutput_Empty() throws IOException {
+        // Given
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(List.of()));
+
+        // When
+        String result = filamentCommands.listAll(OutputFormat.CSV);
+
+        // Then
+        assertThat(result).isEqualTo("No filaments found.");
+        verify(filamentService, times(1)).getAllFilaments();
+    }
+
+    @Test
+    void testListAll_CsvOutput_WithSpecialCharacters() throws IOException {
+        // Given - filament with special characters that need CSV escaping
+        Filament specialFilament = new Filament(
+            2,
+            "Red, with \"quotes\"",
+            1,
+            new BigDecimal("30.00"),
+            750
+        );
+        List<Filament> filaments = List.of(specialFilament);
+        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
+        when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
+
+        // When
+        String result = filamentCommands.listAll(OutputFormat.CSV);
+
+        // Then
+        // Verify that the color field is properly escaped with quotes
+        assertThat(result).contains("\"Red, with \"\"quotes\"\"\"");
+        verify(filamentService, times(1)).getAllFilaments();
+        verify(filamentService, times(1)).getAllFilamentTypes();
+    }
+
+    @Test
+    void testGetFilament_JsonOutput() throws IOException {
+        // Given
+        when(filamentService.getFilamentById(1)).thenReturn(new Result.Success<>(testFilament));
+        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
+
+        // When
+        String result = filamentCommands.getFilament(1, OutputFormat.JSON);
+
+        // Then
+        assertThat(result).contains("\"id\" : 1");
+        assertThat(result).contains("\"color\" : \"Blue\"");
+        assertThat(result).contains("\"price\" : 25.00");
+        assertThat(result).contains("\"weight\" : 1000");
+        // Verify nested filamentType object
+        assertThat(result).contains("\"filamentType\"");
+        assertThat(result).contains("\"name\" : \"Test PLA\"");
+        assertThat(result).contains("\"manufacturer\" : \"TestBrand\"");
+        assertThat(result).contains("\"type\" : \"PLA\"");
+        assertThat(result).contains("\"diameter\" : 1.75");
+        assertThat(result).contains("\"nozzleTemp\" : \"190-220\"");
+        assertThat(result).contains("\"bedTemp\" : \"50-60\"");
+        assertThat(result).contains("\"density\" : 1.24");
+        verify(filamentService, times(1)).getFilamentById(1);
+        verify(filamentService, times(1)).getFilamentTypeById(1);
+    }
+
+    @Test
+    void testGetFilament_CsvOutput() throws IOException {
+        // Given
+        when(filamentService.getFilamentById(1)).thenReturn(new Result.Success<>(testFilament));
+        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
+
+        // When
+        String result = filamentCommands.getFilament(1, OutputFormat.CSV);
+
+        // Then
+        // Verify CSV headers
+        assertThat(result).contains("ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight");
+        // Verify CSV row content
+        assertThat(result).contains("1,Test PLA,TestBrand,PLA,1.75 mm,190-220°C,50-60°C,1.24,Blue,€25.00,1000g");
+        verify(filamentService, times(1)).getFilamentById(1);
+        verify(filamentService, times(1)).getFilamentTypeById(1);
+    }
+
+    @Test
+    void testGetFilament_CsvOutput_WithSpecialCharacters() throws IOException {
+        // Given - filament with special characters that need CSV escaping
+        Filament specialFilament = new Filament(
+            2,
+            "Red, with \"quotes\"",
+            1,
+            new BigDecimal("30.00"),
+            750
+        );
+        when(filamentService.getFilamentById(2)).thenReturn(new Result.Success<>(specialFilament));
+        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
+
+        // When
+        String result = filamentCommands.getFilament(2, OutputFormat.CSV);
+
+        // Then
+        // Verify that the color field is properly escaped with quotes
+        assertThat(result).contains("\"Red, with \"\"quotes\"\"\"");
+        verify(filamentService, times(1)).getFilamentById(2);
+        verify(filamentService, times(1)).getFilamentTypeById(1);
+    }
 }

@@ -106,31 +106,32 @@ public class FilamentCommands {
             // For CSV, use same format as list (single row)
             String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
             
-            String[] row;
-            if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {
-                FilamentType ft = success.value();
-                row = new String[] {
-                    String.valueOf(f.id()),
-                    ft.name(),
-                    ft.manufacturer(),
-                    ft.type(),
-                    String.format("%.2f mm", ft.diameter()),
-                    ft.nozzleTemp() + "°C",
-                    ft.bedTemp() + "°C",
-                    String.format("%.2f", ft.density()),
-                    f.color(),
-                    String.format("€%.2f", f.price()),
-                    f.weight() + "g"
-                };
-            } else {
-                row = new String[] {
-                    String.valueOf(f.id()),
-                    "?", "?", "?", "?", "?", "?", "?",
-                    f.color(),
-                    String.format("€%.2f", f.price()),
-                    f.weight() + "g"
-                };
-            }
+            Function<Filament, String[]> rowMapper = filament -> {
+                if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {
+                    FilamentType ft = success.value();
+                    return new String[] {
+                        String.valueOf(filament.id()),
+                        ft.name(),
+                        ft.manufacturer(),
+                        ft.type(),
+                        String.format("%.2f mm", ft.diameter()),
+                        ft.nozzleTemp() + "°C",
+                        ft.bedTemp() + "°C",
+                        String.format("%.2f", ft.density()),
+                        filament.color(),
+                        String.format("€%.2f", filament.price()),
+                        filament.weight() + "g"
+                    };
+                } else {
+                    return new String[] {
+                        String.valueOf(filament.id()),
+                        "?", "?", "?", "?", "?", "?", "?",
+                        filament.color(),
+                        String.format("€%.2f", filament.price()),
+                        filament.weight() + "g"
+                    };
+                }
+            };
             
             // Delegate CSV formatting (including header escaping) to shared formatter
             return OutputFormatter.formatCsv(headers, List.of(row));
