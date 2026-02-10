@@ -68,7 +68,7 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
     @Override
     public Result<FilamentType, String> add(FilamentType type) {
         return findAll()
-            .map(types -> {
+            .flatMap(types -> {
                 // Generate next ID
                 int nextId = types.stream()
                     .mapToInt(FilamentType::id)
@@ -90,16 +90,9 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
                 
                 List<FilamentType> updated = new ArrayList<>(types);
                 updated.add(newType);
-                return updated;
-            })
-            .flatMap(this::save)
-            .flatMap(v -> findAll()
-                .flatMap(types -> types.stream()
-                    .reduce((first, second) -> second)  // Get last element
-                    .<Result<FilamentType, String>>map(Result.Success::new)
-                    .orElse(new Result.Failure<>("Failed to retrieve added filament type"))
-                )
-            );
+                
+                return save(updated).map(v -> newType);
+            });
     }
     
     @Override
