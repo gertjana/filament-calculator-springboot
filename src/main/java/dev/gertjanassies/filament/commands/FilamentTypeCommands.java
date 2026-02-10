@@ -111,10 +111,12 @@ public class FilamentTypeCommands {
             type = lineReader.readLine("Type (PLA/PETG/ABS/etc): ");
         }
         if (diameter == null) {
-            while (diameter == null) {
+            boolean validInput = false;
+            while (!validInput) {
                 try {
                     String input = lineReader.readLine("Diameter (mm): ");
                     diameter = Double.parseDouble(input);
+                    validInput = true;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid number format. Please enter a valid decimal number.");
                 }
@@ -127,10 +129,12 @@ public class FilamentTypeCommands {
             bedTemp = lineReader.readLine("Bed Temperature (e.g., 50-60): ");
         }
         if (density == null) {
-            while (density == null) {
+            boolean validInput = false;
+            while (!validInput) {
                 try {
                     String input = lineReader.readLine("Density (g/cm³): ");
                     density = Double.parseDouble(input);
+                    validInput = true;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid number format. Please enter a valid decimal number.");
                 }
