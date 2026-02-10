@@ -101,15 +101,20 @@ public class FileFilamentRepository implements FilamentRepository {
     @Override
     public Result<Filament, String> update(Filament filament) {
         return findAll()
-            .map(filaments -> {
+            .flatMap(filaments -> {
                 List<Filament> updated = new ArrayList<>(filaments);
+                boolean found = false;
                 for (int i = 0; i < updated.size(); i++) {
                     if (updated.get(i).id() == filament.id()) {
                         updated.set(i, filament);
+                        found = true;
                         break;
                     }
                 }
-                return updated;
+                if (!found) {
+                    return new Result.Failure<List<Filament>, String>("Filament not found: " + filament.id());
+                }
+                return new Result.Success<List<Filament>, String>(updated);
             })
             .flatMap(this::save)
             .map(v -> filament);  // Transform Void to the updated Filament
