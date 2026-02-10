@@ -139,36 +139,36 @@ public class FilamentCommands {
             color = lineReader.readLine("Color: ");
         }
         if (filamentTypeId == null) {
-            boolean validInput = false;
-            while (!validInput) {
+            boolean validFilamentTypeId = false;
+            while (!validFilamentTypeId) {
                 try {
                     String input = lineReader.readLine("Filament Type ID: ");
                     filamentTypeId = Integer.parseInt(input);
-                    validInput = true;
+                    validFilamentTypeId = true;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid number format. Please enter a valid integer.");
                 }
             }
         }
         if (price == null) {
-            boolean validInput = false;
-            while (!validInput) {
+            boolean validPrice = false;
+            while (!validPrice) {
                 try {
                     String input = lineReader.readLine("Price (€): ");
                     price = Double.parseDouble(input);
-                    validInput = true;
+                    validPrice = true;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid number format. Please enter a valid decimal number.");
                 }
             }
         }
         if (weight == null) {
-            boolean validInput = false;
-            while (!validInput) {
+            boolean validWeight = false;
+            while (!validWeight) {
                 try {
                     String input = lineReader.readLine("Weight (grams): ");
                     weight = Integer.parseInt(input);
-                    validInput = true;
+                    validWeight = true;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid number format. Please enter a valid integer.");
                 }
