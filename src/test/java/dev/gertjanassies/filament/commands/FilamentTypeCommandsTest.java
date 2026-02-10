@@ -55,7 +55,7 @@ class FilamentTypeCommandsTest {
         String result = filamentTypeCommands.listTypes();
 
         // Then
-        assertThat(result).contains("1");
+        assertThat(result).containsPattern("\\b1\\b");
         assertThat(result).contains("Test PLA");
         assertThat(result).contains("TestBrand");
         assertThat(result).contains("PLA");
