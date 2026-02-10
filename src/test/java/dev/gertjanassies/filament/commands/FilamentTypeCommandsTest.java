@@ -171,4 +171,41 @@ class FilamentTypeCommandsTest {
         assertThat(result).contains("not found").contains("999");
         verify(filamentTypeService, times(1)).getFilamentTypeById(999);
     }
+
+    @Test
+    void testListAllJson() throws IOException {
+        // Given
+        List<FilamentType> types = List.of(testFilamentType);
+        when(filamentTypeService.getAllFilamentTypes()).thenReturn(new Result.Success<>(types));
+
+        // When
+        String result = filamentTypeCommands.listTypes(OutputFormat.JSON);
+
+        // Then
+        assertThat(result).contains("\"id\" : 1");
+        assertThat(result).contains("\"name\" : \"Test PLA\"");
+        assertThat(result).contains("\"manufacturer\" : \"TestBrand\"");
+        assertThat(result).contains("\"description\" : \"Standard PLA filament\"");
+        assertThat(result).contains("\"type\" : \"PLA\"");
+        assertThat(result).contains("\"diameter\" : 1.75");
+        assertThat(result).contains("\"nozzleTemp\" : \"190-220\"");
+        assertThat(result).contains("\"bedTemp\" : \"50-60\"");
+        assertThat(result).contains("\"density\" : 1.24");
+        verify(filamentTypeService, times(1)).getAllFilamentTypes();
+    }
+
+    @Test
+    void testListAllCsv() throws IOException {
+        // Given
+        List<FilamentType> types = List.of(testFilamentType);
+        when(filamentTypeService.getAllFilamentTypes()).thenReturn(new Result.Success<>(types));
+
+        // When
+        String result = filamentTypeCommands.listTypes(OutputFormat.CSV);
+
+        // Then
+        assertThat(result).contains("ID,Name,Manufacturer,Description,Type,Diameter,Nozzle Temp,Bed Temp,Density");
+        assertThat(result).contains("1,Test PLA,TestBrand,Standard PLA filament,PLA,1.75 mm,190-220°C,50-60°C,1.24 g/cm³");
+        verify(filamentTypeService, times(1)).getAllFilamentTypes();
+    }
 }

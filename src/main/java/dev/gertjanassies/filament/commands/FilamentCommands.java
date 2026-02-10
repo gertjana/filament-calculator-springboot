@@ -12,7 +12,6 @@ import org.springframework.shell.standard.ShellOption;
 
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
-import dev.gertjanassies.filament.dto.FilamentListWithType;
 import dev.gertjanassies.filament.dto.FilamentWithType;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.InputHelper;
@@ -134,8 +133,8 @@ public class FilamentCommands {
                 }
             };
             
-            // Use OutputFormatter to format as CSV
-            return OutputFormatter.formatCsv(List.of(f), headers, rowMapper);
+            // Delegate CSV formatting (including header escaping) to shared formatter
+            return OutputFormatter.formatCsv(headers, List.of(row));
         }
         
         // For TABLE format, use key-value layout
