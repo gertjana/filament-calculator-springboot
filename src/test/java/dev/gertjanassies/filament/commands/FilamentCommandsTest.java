@@ -60,7 +60,7 @@ class FilamentCommandsTest {
         // Given
         List<Filament> filaments = List.of(testFilament);
         when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
-        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
+        when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
 
         // When
         String result = filamentCommands.listAll();
