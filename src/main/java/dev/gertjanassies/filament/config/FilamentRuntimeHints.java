@@ -9,6 +9,8 @@ import org.springframework.lang.Nullable;
 import dev.gertjanassies.filament.domain.CostCalculation;
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
+import dev.gertjanassies.filament.dto.FilamentListWithType;
+import dev.gertjanassies.filament.dto.FilamentWithType;
 
 /**
  * Runtime hints for GraalVM native compilation.
@@ -30,6 +32,14 @@ public class FilamentRuntimeHints implements RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_PUBLIC_METHODS,
                 MemberCategory.DECLARED_FIELDS)
             .registerType(CostCalculation.class, 
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.DECLARED_FIELDS)
+            .registerType(FilamentWithType.class, 
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.DECLARED_FIELDS)
+            .registerType(FilamentListWithType.class, 
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_METHODS,
                 MemberCategory.DECLARED_FIELDS);

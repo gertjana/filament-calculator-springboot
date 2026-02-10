@@ -148,7 +148,7 @@ public class OutputFormatter {
     /**
      * Escape CSV values.
      */
-    private static String[] escapeCsvValues(String[] values) {
+    public static String[] escapeCsvValues(String[] values) {
         String[] escaped = new String[values.length];
         for (int i = 0; i < values.length; i++) {
             escaped[i] = escapeCsvValue(values[i]);

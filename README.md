@@ -126,6 +126,7 @@ Filament added successfully:
 
 #### JSON Output Format
 
+**Filament Types:**
 ```bash
 ~> filament type-list -o json
 [ {
@@ -151,8 +152,69 @@ Filament added successfully:
 } ]
 ```
 
+**Filaments (with nested type information):**
+```bash
+~> filament list -o json
+[ {
+  "id" : 1,
+  "color" : "Natural",
+  "price" : 24.99,
+  "weight" : 1000,
+  "filamentType" : {
+    "id" : 1,
+    "name" : "Prusa PLA",
+    "manufacturer" : "Prusa",
+    "description" : "Standard PLA",
+    "type" : "PLA",
+    "diameter" : 1.75,
+    "nozzleTemp" : "190-220",
+    "bedTemp" : "50-60",
+    "density" : 1.24
+  }
+}, {
+  "id" : 9,
+  "color" : "Mineral marble",
+  "price" : 25.00,
+  "weight" : 850,
+  "filamentType" : {
+    "id" : 4,
+    "name" : "Fiberlogy Easy PLA",
+    "manufacturer" : "Fiberlogy",
+    "description" : "Easy to print PLA",
+    "type" : "PLA",
+    "diameter" : 1.75,
+    "nozzleTemp" : "190-220",
+    "bedTemp" : "50-60",
+    "density" : 1.24
+  }
+} ]
+```
+
+**Single filament:**
+```bash
+~> filament get 9 -o json
+{
+  "id" : 9,
+  "color" : "Mineral marble",
+  "price" : 25.00,
+  "weight" : 850,
+  "filamentType" : {
+    "id" : 4,
+    "name" : "Fiberlogy Easy PLA",
+    "manufacturer" : "Fiberlogy",
+    "description" : "Easy to print PLA",
+    "type" : "PLA",
+    "diameter" : 1.75,
+    "nozzleTemp" : "190-220",
+    "bedTemp" : "50-60",
+    "density" : 1.24
+  }
+}
+```
+
 #### CSV Output Format
 
+**Filament Types:**
 ```bash
 ~> filament type-list --output csv
 ID,Name,Manufacturer,Description,Type,Diameter,Nozzle Temp,Bed Temp,Density
@@ -160,6 +222,21 @@ ID,Name,Manufacturer,Description,Type,Diameter,Nozzle Temp,Bed Temp,Density
 4,Fiberlogy Easy PLA,Fiberlogy,Easy to print PLA,PLA,1.75 mm,190-220°C,50-60°C,1.24 g/cm³
 1,Prusa PLA,Prusa,Standard PLA,PLA,1.75 mm,190-220°C,50-60°C,1.24 g/cm³
 3,Prusa PETG,Prusa,Standard PETG,PETG,1.75 mm,220-250°C,70-85°C,1.27 g/cm³
+```
+
+**Filaments (with flattened type information):**
+```bash
+~> filament list --output csv
+ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight
+1,Prusa PLA,Prusa,PLA,1.75 mm,190-220°C,50-60°C,1.24,Natural,€24.99,1000g
+9,Fiberlogy Easy PLA,Fiberlogy,PLA,1.75 mm,190-220°C,50-60°C,1.24,Mineral marble,€25.00,850g
+```
+
+**Single filament (same format as list):**
+```bash
+~> filament get 9 -o csv
+ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight
+9,Fiberlogy Easy PLA,Fiberlogy,PLA,1.75 mm,190-220°C,50-60°C,1.24,Mineral marble,€25.00,850g
 ```
 
 #### Adding and Listing Filament Spools
