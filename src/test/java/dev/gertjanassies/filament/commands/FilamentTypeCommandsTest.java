@@ -55,9 +55,13 @@ class FilamentTypeCommandsTest {
         String result = filamentTypeCommands.listTypes();
 
         // Then
+        assertThat(result).contains("ID");
         assertThat(result).contains("1");
+        assertThat(result).contains("Name");
         assertThat(result).contains("Test PLA");
+        assertThat(result).contains("Manufacturer");
         assertThat(result).contains("TestBrand");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PLA");
         verify(filamentTypeService, times(1)).getAllFilamentTypes();
     }
@@ -84,13 +88,21 @@ class FilamentTypeCommandsTest {
         String result = filamentTypeCommands.getType(1);
 
         // Then
+        assertThat(result).contains("ID");
         assertThat(result).contains("1");
+        assertThat(result).contains("Name");
         assertThat(result).contains("Test PLA");
+        assertThat(result).contains("Manufacturer");
         assertThat(result).contains("TestBrand");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PLA");
+        assertThat(result).contains("Diameter");
         assertThat(result).contains("1.75");
+        assertThat(result).contains("Nozzle Temp");
         assertThat(result).contains("190-220");
+        assertThat(result).contains("Bed Temp");
         assertThat(result).contains("50-60");
+        assertThat(result).contains("Density");
         assertThat(result).contains("1.24");
         verify(filamentTypeService, times(1)).getFilamentTypeById(1);
     }
@@ -114,9 +126,14 @@ class FilamentTypeCommandsTest {
         );
 
         // Then
+        assertThat(result).contains("successfully");
+        assertThat(result).contains("ID");
         assertThat(result).contains("2");
+        assertThat(result).contains("Name");
         assertThat(result).contains("New PETG");
+        assertThat(result).contains("Manufacturer");
         assertThat(result).contains("NewBrand");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PETG");
         verify(filamentTypeService, times(1)).addFilamentType(any(FilamentType.class));
     }
@@ -130,6 +147,7 @@ class FilamentTypeCommandsTest {
         String result = filamentTypeCommands.deleteType(1);
 
         // Then
+        assertThat(result).contains("successfully");
         assertThat(result).contains("deleted");
         assertThat(result).contains("1");
         verify(filamentTypeService, times(1)).deleteFilamentType(1);
