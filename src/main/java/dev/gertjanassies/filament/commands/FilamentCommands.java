@@ -133,11 +133,8 @@ public class FilamentCommands {
                 };
             }
             
-            // Create CSV with header and single row
-            StringBuilder csv = new StringBuilder();
-            csv.append(String.join(",", headers)).append("\n");
-            csv.append(String.join(",", OutputFormatter.escapeCsvValues(row)));
-            return csv.toString();
+            // Delegate CSV formatting (including header escaping) to shared formatter
+            return OutputFormatter.formatCsv(headers, List.of(row));
         }
         
         // For TABLE format, use key-value layout
