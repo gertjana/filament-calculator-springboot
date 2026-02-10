@@ -112,9 +112,9 @@ public class FileFilamentRepository implements FilamentRepository {
                     }
                 }
                 if (!found) {
-                    return new Result.Failure<List<Filament>, String>("Filament not found: " + filament.id());
+                    return new Result.Failure<>("Filament not found: " + filament.id());
                 }
-                return new Result.Success<List<Filament>, String>(updated);
+                return new Result.Success<>(updated);
             })
             .flatMap(this::save)
             .map(v -> filament);  // Transform Void to the updated Filament
