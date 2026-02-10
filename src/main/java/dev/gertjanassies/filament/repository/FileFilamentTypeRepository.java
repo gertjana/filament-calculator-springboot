@@ -29,7 +29,7 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
     @Override
     public Result<List<FilamentType>, String> findAll() {
         if (!Files.exists(filePath)) {
-            return new Result.Failure<>("File not found: " + filePath);
+            return new Result.Success<>(List.of());
         }
         
         return Result.of(
