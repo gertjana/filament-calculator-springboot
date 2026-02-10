@@ -139,16 +139,34 @@ public class FilamentCommands {
             color = lineReader.readLine("Color: ");
         }
         if (filamentTypeId == null) {
-            String input = lineReader.readLine("Filament Type ID: ");
-            filamentTypeId = Integer.parseInt(input);
+            while (filamentTypeId == null) {
+                try {
+                    String input = lineReader.readLine("Filament Type ID: ");
+                    filamentTypeId = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid integer.");
+                }
+            }
         }
         if (price == null) {
-            String input = lineReader.readLine("Price (€): ");
-            price = Double.parseDouble(input);
+            while (price == null) {
+                try {
+                    String input = lineReader.readLine("Price (€): ");
+                    price = Double.parseDouble(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid decimal number.");
+                }
+            }
         }
         if (weight == null) {
-            String input = lineReader.readLine("Weight (grams): ");
-            weight = Integer.parseInt(input);
+            while (weight == null) {
+                try {
+                    String input = lineReader.readLine("Weight (grams): ");
+                    weight = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid integer.");
+                }
+            }
         }
 
         var filament = new Filament(0, color, filamentTypeId, java.math.BigDecimal.valueOf(price), weight);

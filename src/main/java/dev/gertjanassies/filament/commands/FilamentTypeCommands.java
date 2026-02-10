@@ -111,8 +111,14 @@ public class FilamentTypeCommands {
             type = lineReader.readLine("Type (PLA/PETG/ABS/etc): ");
         }
         if (diameter == null) {
-            String input = lineReader.readLine("Diameter (mm): ");
-            diameter = Double.parseDouble(input);
+            while (diameter == null) {
+                try {
+                    String input = lineReader.readLine("Diameter (mm): ");
+                    diameter = Double.parseDouble(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid decimal number.");
+                }
+            }
         }
         if (nozzleTemp == null) {
             nozzleTemp = lineReader.readLine("Nozzle Temperature (e.g., 190-220): ");
@@ -121,8 +127,14 @@ public class FilamentTypeCommands {
             bedTemp = lineReader.readLine("Bed Temperature (e.g., 50-60): ");
         }
         if (density == null) {
-            String input = lineReader.readLine("Density (g/cm³): ");
-            density = Double.parseDouble(input);
+            while (density == null) {
+                try {
+                    String input = lineReader.readLine("Density (g/cm³): ");
+                    density = Double.parseDouble(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid decimal number.");
+                }
+            }
         }
 
         var filamentType = new FilamentType(0, name, manufacturer, description, type, diameter, nozzleTemp, bedTemp, density);
