@@ -2,18 +2,17 @@ package dev.gertjanassies.filament.commands;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.springframework.shell.table.ArrayTableModel;
-import org.springframework.shell.table.BorderStyle;
-import org.springframework.shell.table.TableBuilder;
-import org.springframework.shell.table.TableModel;
 
 import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentTypeService;
 import dev.gertjanassies.filament.util.InputHelper;
+import dev.gertjanassies.filament.util.OutputFormat;
+import dev.gertjanassies.filament.util.OutputFormatter;
 
 @ShellComponent
 public class FilamentTypeCommands {
@@ -26,35 +25,33 @@ public class FilamentTypeCommands {
         this.inputHelper = inputHelper;
     }
 
-    private String formatFilamentTypesTable(List<FilamentType> types) {
+    private String formatFilamentTypes(List<FilamentType> types, OutputFormat format) {
         if (types.isEmpty()) {
             return "No filament types found.";
         }
 
-        String[][] data = new String[types.size() + 1][9];
-        data[0] = new String[] {"ID", "Name", "Manufacturer", "Description", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density"};
+        String[] headers = {"ID", "Name", "Manufacturer", "Description", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density"};
         
-        for (int i = 0; i < types.size(); i++) {
-            FilamentType ft = types.get(i);
-            data[i + 1] = new String[] {
-                String.valueOf(ft.id()),
-                ft.name(),
-                ft.manufacturer(),
-                ft.description(),
-                ft.type(),
-                String.format("%.2f mm", ft.diameter()),
-                ft.nozzleTemp() + "°C",
-                ft.bedTemp() + "°C",
-                String.format("%.2f g/cm³", ft.density())
-            };
-        }
+        Function<FilamentType, String[]> rowMapper = ft -> new String[] {
+            String.valueOf(ft.id()),
+            ft.name(),
+            ft.manufacturer(),
+            ft.description(),
+            ft.type(),
+            String.format("%.2f mm", ft.diameter()),
+            ft.nozzleTemp() + "°C",
+            ft.bedTemp() + "°C",
+            String.format("%.2f g/cm³", ft.density())
+        };
 
-        TableModel model = new ArrayTableModel(data);
-        TableBuilder tableBuilder = new TableBuilder(model);
-        return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(140);
+        return switch (format) {
+            case JSON -> OutputFormatter.formatJson(types);
+            case CSV -> OutputFormatter.formatCsv(types, headers, rowMapper);
+            case TABLE -> OutputFormatter.formatTable(types, headers, rowMapper);
+        };
     }
 
-    private String formatFilamentTypeTable(FilamentType ft) {
+    private String formatFilamentType(FilamentType ft, OutputFormat format) {
         LinkedHashMap<String, String> data = new LinkedHashMap<>();
         data.put("ID", String.valueOf(ft.id()));
         data.put("Name", ft.name());
@@ -66,22 +63,19 @@ public class FilamentTypeCommands {
         data.put("Bed Temp", ft.bedTemp() + "°C");
         data.put("Density", String.format("%.2f g/cm³", ft.density()));
 
-        String[][] tableData = new String[data.size()][2];
-        int i = 0;
-        for (var entry : data.entrySet()) {
-            tableData[i++] = new String[] {entry.getKey(), entry.getValue()};
-        }
-
-        TableModel model = new ArrayTableModel(tableData);
-        TableBuilder tableBuilder = new TableBuilder(model);
-        return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(60);
+        return switch (format) {
+            case JSON -> OutputFormatter.formatJson(ft);
+            case CSV -> OutputFormatter.formatCsv(data);
+            case TABLE -> OutputFormatter.formatTable(data);
+        };
     }
 
     @ShellMethod(key = "type-list", value = "Lists all filament types")
-    public String listTypes() {
+    public String listTypes(
+        @ShellOption(value = {"-o", "--output"}, defaultValue = "TABLE", help = "Output format: table, json, or csv") OutputFormat format) {
         return filamentTypeService.getAllFilamentTypes().fold(
             error -> "Failed to retrieve filament types: " + error,
-            this::formatFilamentTypesTable
+            types -> formatFilamentTypes(types, format)
         );
     }
 
@@ -125,15 +119,17 @@ public class FilamentTypeCommands {
         var filamentType = new FilamentType(0, name, manufacturer, description, type, diameter, nozzleTemp, bedTemp, density);
         return filamentTypeService.addFilamentType(filamentType).fold(
             error -> "Failed to add filament type: " + error,
-            value -> "Filament type added successfully:\n" + formatFilamentTypeTable(value)
+            value -> "Filament type added successfully:\n" + formatFilamentType(value, OutputFormat.TABLE)
         );
     }
 
     @ShellMethod(key = "type-get", value = "Gets a filament type by its id. Usage: type-get <id>")
-    public String getType(@ShellOption int id) {
+    public String getType(
+        @ShellOption int id,
+        @ShellOption(value = {"-o", "--output"}, defaultValue = "TABLE", help = "Output format: table, json, or csv") OutputFormat format) {
         return filamentTypeService.getFilamentTypeById(id).fold(
             error -> "Failed to get filament type with id " + id + ": " + error,
-            this::formatFilamentTypeTable
+            filamentType -> formatFilamentType(filamentType, format)
         );
     }
 

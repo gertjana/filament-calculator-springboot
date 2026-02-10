@@ -20,6 +20,7 @@ import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.InputHelper;
+import dev.gertjanassies.filament.util.OutputFormat;
 import dev.gertjanassies.filament.util.Result;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,7 +68,7 @@ class FilamentCommandsTest {
         when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
 
         // When
-        String result = filamentCommands.listAll();
+        String result = filamentCommands.listAll(OutputFormat.TABLE);
 
         // Then
         assertThat(result).contains("ID");
@@ -87,7 +88,7 @@ class FilamentCommandsTest {
         when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(List.of()));
 
         // When
-        String result = filamentCommands.listAll();
+        String result = filamentCommands.listAll(OutputFormat.TABLE);
 
         // Then
         assertThat(result).isEqualTo("No filaments found.");
@@ -101,7 +102,7 @@ class FilamentCommandsTest {
         when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
 
         // When
-        String result = filamentCommands.getFilament(1);
+        String result = filamentCommands.getFilament(1, OutputFormat.TABLE);
 
         // Then
         assertThat(result).contains("ID");
@@ -163,7 +164,7 @@ class FilamentCommandsTest {
             .thenReturn(new Result.Failure<>("Filament not found: 999"));
 
         // When
-        String result = filamentCommands.getFilament(999);
+        String result = filamentCommands.getFilament(999, OutputFormat.TABLE);
 
         // Then
         assertThat(result).contains("not found").contains("999");

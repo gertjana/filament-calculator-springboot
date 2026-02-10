@@ -1,11 +1,30 @@
-Getting acquainted with Java 21 and Springboot 3
+# Filament Manager
 
-Experiment to implement a [Result<T, E> class](src/main/java/dev/gertjanassies/filament/util/Result.java) like in Rust to avoid having to throw exceptions
+A command line application for managing 3D printer filament inventory and calculating print costs.
 
-The application itself is a command line util that allows you to maintain a list of filaments and do cost calculation, based on the length of filament used in a certain model. most slicers will give you this after they've sliced a 3D model
+## Features
+
+- **Filament Type Management**: Define filament types with specifications (material, diameter, temperature settings, density)
+- **Filament Spool Tracking**: Track individual spools with color, price, and weight
+- **Cost Calculation**: Calculate print costs based on filament length (from slicer output)
+- **Auto-increment IDs**: IDs are automatically generated when adding items
+- **Interactive Mode**: Commands prompt for missing arguments interactively
+- **Multiple Output Formats**: Display data as tables, JSON, or CSV
+- **Result<T, E> Pattern**: Rust-inspired error handling without exceptions ([implementation](src/main/java/dev/gertjanassies/filament/util/Result.java))
+
+## Technology Stack
+
+- Java 21
+- Spring Boot 3
+- Spring Shell (interactive CLI)
+- GraalVM Native Image support
+- JLine for terminal input
+
+## Usage
+
+### Available Commands
 
 ```
-~> filament help
 AVAILABLE COMMANDS
 
 Built-In Commands
@@ -15,21 +34,30 @@ Calculate Command
        calculate: Calculates the costs for a print. Usage: calculate <id> <length in cm>
 
 Filament Commands
-       add: Adds a new filament to the collection. Usage: add <color> <filamentTypeId> <price> <weight>
-       get: Gets a filament by its id. Usage: get <id>
-       list: Lists all filaments in the collection
+       add: Adds a new filament to the collection. Usage: add [<color> <filamentTypeId> <price> <weight>]
+       get: Gets a filament by its id. Usage: get <id> [-o|--output <format>]
+       list: Lists all filaments in the collection [-o|--output <format>]
        delete: Deletes a filament by its id. Usage: delete <id>
 
 Filament Type Commands
-       type-add: Adds a new filament type. Usage: type-add <name> <manufacturer> <description> <type> <diameter> <nozzleTemp> <bedTemp> <density>
+       type-add: Adds a new filament type. Usage: type-add [<name> <manufacturer> <description> <type> <diameter> <nozzleTemp> <bedTemp> <density>]
        type-delete: Deletes a filament type by its id. Usage: type-delete <id>
-       type-get: Gets a filament type by its id. Usage: type-get <id>
-       type-list: Lists all filament types
+       type-get: Gets a filament type by its id. Usage: type-get <id> [-o|--output <format>]
+       type-list: Lists all filament types [-o|--output <format>]
 
 Version Command
        version: Displays the application version
+```
 
-# First, add a filament type (ID is auto-generated)
+**Output Formats**: Use `-o` or `--output` with `table` (default), `json`, or `csv` (case-insensitive)
+
+**Interactive Mode**: Commands with optional arguments will prompt for input if not provided
+
+### Examples
+
+#### Adding a Filament Type (with arguments)
+
+```bash
 ~> filament type-add "Fiberlogy Easy PLA" Fiberlogy "Easy to print PLA" PLA 1.75 "190-220" "50-60" 1.24
 Filament type added successfully:
 ┌──────────────┬──────────────────────┐
@@ -51,8 +79,37 @@ Filament type added successfully:
 ├──────────────┼──────────────────────┤
 │Density       │1.24 g/cm³            │
 └──────────────┴──────────────────────┘
+```
 
-# View all filament types
+#### Interactive Mode (prompts for missing arguments)
+
+```bash
+~> filament type-add
+Name: Fiberlogy Easy PLA
+Manufacturer: Fiberlogy
+Description: Easy to print PLA
+Type (PLA/PETG/ABS/etc): PLA
+Diameter (mm): 1.75
+Nozzle Temperature (e.g., 190-220): 190-220
+Bed Temperature (e.g., 50-60): 50-60
+Density (g/cm³): 1.24
+Filament type added successfully:
+# ... (output as shown above)
+```
+
+```bash
+~> filament add
+Color: Blue Steel
+Filament Type ID: 4
+Price (€): 22.50
+Weight (grams): 1000
+Filament added successfully:
+# ... (output as shown above)
+```
+
+#### Listing Filament Types (Table Format - Default)
+
+```bash
 ~> filament type-list
 ┌──┬──────────────────┬────────────┬──────────────────┬──────┬────────┬───────────┬─────────┬───────────┐
 │ID│Name              │Manufacturer│Description       │Type  │Diameter│Nozzle Temp│Bed Temp │Density    │
@@ -65,7 +122,49 @@ Filament type added successfully:
 ├──┼──────────────────┼────────────┼──────────────────┼──────┼────────┼───────────┼─────────┼───────────┤
 │3 │Prusa PETG        │Prusa       │Standard PETG     │PETG  │1.75 mm │220-250°C  │70-85°C  │1.27 g/cm³ │
 └──┴──────────────────┴────────────┴──────────────────┴──────┴────────┴───────────┴─────────┴───────────┘
+```
 
+#### JSON Output Format
+
+```bash
+~> filament type-list -o json
+[ {
+  "id" : 2,
+  "name" : "ColorFabb nGEN",
+  "manufacturer" : "ColorFabb",
+  "description" : "nGEN copolyester",
+  "type" : "nGEN",
+  "diameter" : 1.75,
+  "nozzleTemp" : "220-250",
+  "bedTemp" : "70-85",
+  "density" : 1.28
+}, {
+  "id" : 4,
+  "name" : "Fiberlogy Easy PLA",
+  "manufacturer" : "Fiberlogy",
+  "description" : "Easy to print PLA",
+  "type" : "PLA",
+  "diameter" : 1.75,
+  "nozzleTemp" : "190-220",
+  "bedTemp" : "50-60",
+  "density" : 1.24
+} ]
+```
+
+#### CSV Output Format
+
+```bash
+~> filament type-list --output csv
+ID,Name,Manufacturer,Description,Type,Diameter,Nozzle Temp,Bed Temp,Density
+2,ColorFabb nGEN,ColorFabb,nGEN copolyester,nGEN,1.75 mm,220-250°C,70-85°C,1.28 g/cm³
+4,Fiberlogy Easy PLA,Fiberlogy,Easy to print PLA,PLA,1.75 mm,190-220°C,50-60°C,1.24 g/cm³
+1,Prusa PLA,Prusa,Standard PLA,PLA,1.75 mm,190-220°C,50-60°C,1.24 g/cm³
+3,Prusa PETG,Prusa,Standard PETG,PETG,1.75 mm,220-250°C,70-85°C,1.27 g/cm³
+```
+
+#### Adding and Listing Filament Spools
+
+```bash
 # Add a filament spool (references filament type by ID)
 ~> filament add "Mineral marble" 4 25.00 850
 Filament added successfully:
@@ -96,26 +195,24 @@ Filament added successfully:
 ├─────────────────┼──────────────────┤
 │Density          │1.24 g/cm³        │
 └─────────────────┴──────────────────┘
+```
 
-# List all filament spools (joins with type information)
+#### Listing Filament Spools (with type information)
+
+```bash
 ~> filament list
 ┌──┬──────────────────┬────────────┬──────┬────────┬───────────┬─────────┬────────┬──────────────┬──────┬──────┐
 │ID│Name              │Manufacturer│Type  │Diameter│Nozzle Temp│Bed Temp │Density │Color         │Price │Weight│
 ├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
 │1 │Prusa PLA         │Prusa       │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Natural       │€24.99│1000g │
 ├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
-│2 │Prusa PLA         │Prusa       │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Copper        │€24.99│1000g │
-├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
-│3 │Prusa PLA         │Prusa       │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Black         │€24.99│1000g │
-├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
-│4 │ColorFabb nGEN    │ColorFabb   │nGEN  │1.75 mm │220-250°C  │70-85°C  │1.28    │Lightgrey     │€25.54│1000g │
-├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
-│5 │Prusa PETG        │Prusa       │PETG  │1.75 mm │220-250°C  │70-85°C  │1.27    │Green         │€24.99│1000g │
-├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
 │9 │Fiberlogy Easy PLA│Fiberlogy   │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Mineral marble│€25.00│850g  │
 └──┴──────────────────┴────────────┴──────┴────────┴───────────┴─────────┴────────┴──────────────┴──────┴──────┘
+```
 
-# Calculate cost for a print
+#### Calculating Print Cost
+
+```bash
 ~> filament calculate 1 4200
 ┌────────────┬───────┐
 │Filament ID │1      │
@@ -124,5 +221,52 @@ Filament added successfully:
 ├────────────┼───────┤
 │Cost        │€ 3.12│
 └────────────┴───────┘
-
 ```
+
+## Building & Running
+
+### Build with Gradle
+
+```bash
+# Build JAR
+./gradlew build
+
+# Run with Spring Boot
+./gradlew bootRun
+
+# Run tests
+./gradlew test
+```
+
+### Build Native Image (GraalVM)
+
+```bash
+# Build native executable
+./gradlew nativeCompile
+
+# Copy to PATH (optional)
+cp build/native/nativeCompile/filament ~/bin/
+```
+
+### Running
+
+```bash
+# JAR
+java -jar build/libs/filament-*.jar
+
+# Native executable
+./build/native/nativeCompile/filament
+
+# Or if copied to PATH
+filament
+```
+
+## Data Storage
+
+Filament data is stored as JSON files in `~/.filament/`:
+- `filaments.json` - Filament spools inventory
+- `filament-types.json` - Filament type definitions
+
+## License
+
+This is a personal learning project exploring Java 21, Spring Boot 3, and functional error handling patterns.
