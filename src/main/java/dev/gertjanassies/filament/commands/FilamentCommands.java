@@ -36,8 +36,8 @@ public class FilamentCommands {
             Filament f = filaments.get(i);
             var typeResult = filamentService.getFilamentTypeById(f.filamentTypeId());
             
-            if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {
-                FilamentType ft = success.value();
+            if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<?, ?> success) {
+                FilamentType ft = (FilamentType) success.value();
                 data[i + 1] = new String[] {
                     String.valueOf(f.id()),
                     ft.name(),
