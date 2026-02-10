@@ -21,9 +21,9 @@ public class FileFilamentTypeRepository implements FilamentTypeRepository {
     
     public FileFilamentTypeRepository(
             ObjectMapper objectMapper,
-            @Value("${filament.type.config.path:.filament/filament-types.json}") String configPath) {
+            @Value("${filament.types.path}") String typesPath) {
         this.objectMapper = objectMapper;
-        this.filePath = Path.of(System.getProperty("user.home"), configPath);
+        this.filePath = Path.of(typesPath);
     }
 
     @Override
