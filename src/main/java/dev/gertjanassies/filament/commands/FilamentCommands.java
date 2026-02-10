@@ -2,6 +2,8 @@ package dev.gertjanassies.filament.commands;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -29,15 +31,23 @@ public class FilamentCommands {
             return "No filaments found.";
         }
 
+        // Fetch all filament types once and build a map for efficient lookup
+        Map<Integer, FilamentType> typeMap = filamentService.getAllFilamentTypes()
+            .map(types -> types.stream()
+                .collect(Collectors.toMap(FilamentType::id, type -> type)))
+            .fold(
+                error -> Map.<Integer, FilamentType>of(),
+                types -> types
+            );
+
         String[][] data = new String[filaments.size() + 1][11];
         data[0] = new String[] {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
 
         for (int i = 0; i < filaments.size(); i++) {
             Filament f = filaments.get(i);
-            var typeResult = filamentService.getFilamentTypeById(f.filamentTypeId());
+            FilamentType ft = typeMap.get(f.filamentTypeId());
             
-            if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<?, ?> success) {
-                FilamentType ft = (FilamentType) success.value();
+            if (ft != null) {
                 data[i + 1] = new String[] {
                     String.valueOf(f.id()),
                     ft.name(),
