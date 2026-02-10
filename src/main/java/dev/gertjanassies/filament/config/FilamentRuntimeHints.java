@@ -18,10 +18,20 @@ public class FilamentRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
     public void registerHints(@NonNull RuntimeHints hints, @Nullable ClassLoader classLoader) {
-        // Register record classes for reflection (needed for Jackson serialization)
+        // Register record classes for reflection (needed for Jackson serialization/deserialization)
+        // Records require: constructors, methods (for accessors), and fields (for record components)
         hints.reflection()
-            .registerType(Filament.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            .registerType(FilamentType.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            .registerType(CostCalculation.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+            .registerType(Filament.class, 
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.DECLARED_FIELDS)
+            .registerType(FilamentType.class, 
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.DECLARED_FIELDS)
+            .registerType(CostCalculation.class, 
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.DECLARED_FIELDS);
     }
 }
