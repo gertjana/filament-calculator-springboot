@@ -9,15 +9,14 @@ import java.util.stream.Collectors;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.springframework.shell.table.ArrayTableModel;
-import org.springframework.shell.table.BorderStyle;
-import org.springframework.shell.table.TableBuilder;
-import org.springframework.shell.table.TableModel;
 
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
+import dev.gertjanassies.filament.dto.FilamentWithType;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.InputHelper;
+import dev.gertjanassies.filament.util.OutputFormat;
+import dev.gertjanassies.filament.util.OutputFormatter;
 
 @ShellComponent
 public class FilamentCommands {
@@ -30,7 +29,7 @@ public class FilamentCommands {
         this.inputHelper = inputHelper;
     }
 
-    private String formatFilamentsTable(List<Filament> filaments) {
+    private String formatFilaments(List<Filament> filaments, OutputFormat format) {
         if (filaments.isEmpty()) {
             return "No filaments found.";
         }
@@ -44,15 +43,23 @@ public class FilamentCommands {
                 types -> types
             );
 
-        String[][] data = new String[filaments.size() + 1][11];
-        data[0] = new String[] {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
+        if (format == OutputFormat.JSON) {
+            // For JSON, create DTOs with nested FilamentType
+            List<FilamentWithType> filamentsWithType = filaments.stream()
+                .map(f -> {
+                    FilamentType ft = typeMap.get(f.filamentTypeId());
+                    return new FilamentWithType(f.id(), f.color(), f.price(), f.weight(), ft);
+                })
+                .toList();
+            return OutputFormatter.formatJson(filamentsWithType);
+        }
 
-        for (int i = 0; i < filaments.size(); i++) {
-            Filament f = filaments.get(i);
+        String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
+
+        Function<Filament, String[]> rowMapper = f -> {
             FilamentType ft = typeMap.get(f.filamentTypeId());
-            
             if (ft != null) {
-                data[i + 1] = new String[] {
+                return new String[] {
                     String.valueOf(f.id()),
                     ft.name(),
                     ft.manufacturer(),
@@ -66,28 +73,71 @@ public class FilamentCommands {
                     f.weight() + "g"
                 };
             } else {
-                data[i + 1] = new String[] {
+                return new String[] {
                     String.valueOf(f.id()),
-                    "?",
-                    "?",
-                    "?",
-                    "?",
-                    "?",
-                    "?",
-                    "?",
+                    "?", "?", "?", "?", "?", "?", "?",
                     f.color(),
                     String.format("€%.2f", f.price()),
                     f.weight() + "g"
                 };
             }
-        }
+        };
 
-        TableModel model = new ArrayTableModel(data);
-        TableBuilder tableBuilder = new TableBuilder(model);
-        return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(140);
+        return switch (format) {
+            case JSON -> throw new IllegalStateException("JSON handled above");
+            case CSV -> OutputFormatter.formatCsv(filaments, headers, rowMapper);
+            case TABLE -> OutputFormatter.formatTable(filaments, headers, rowMapper);
+        };
     }
 
-    private String formatFilamentTable(Filament f) {
+    private String formatFilament(Filament f, OutputFormat format) {
+        var typeResult = filamentService.getFilamentTypeById(f.filamentTypeId());
+        
+        if (format == OutputFormat.JSON) {
+            // For JSON, create DTO with nested FilamentType
+            FilamentType ft = typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success
+                ? success.value()
+                : null;
+            FilamentWithType dto = new FilamentWithType(f.id(), f.color(), f.price(), f.weight(), ft);
+            return OutputFormatter.formatJson(dto);
+        }
+        
+        if (format == OutputFormat.CSV) {
+            // For CSV, use same format as list (single row)
+            String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
+            
+            Function<Filament, String[]> rowMapper = filament -> {
+                if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {
+                    FilamentType ft = success.value();
+                    return new String[] {
+                        String.valueOf(filament.id()),
+                        ft.name(),
+                        ft.manufacturer(),
+                        ft.type(),
+                        String.format("%.2f mm", ft.diameter()),
+                        ft.nozzleTemp() + "°C",
+                        ft.bedTemp() + "°C",
+                        String.format("%.2f", ft.density()),
+                        filament.color(),
+                        String.format("€%.2f", filament.price()),
+                        filament.weight() + "g"
+                    };
+                } else {
+                    return new String[] {
+                        String.valueOf(filament.id()),
+                        "?", "?", "?", "?", "?", "?", "?",
+                        filament.color(),
+                        String.format("€%.2f", filament.price()),
+                        filament.weight() + "g"
+                    };
+                }
+            };
+            
+            // Delegate CSV formatting (including header escaping) to shared formatter
+            return OutputFormatter.formatCsv(headers, List.of(row));
+        }
+        
+        // For TABLE format, use key-value layout
         LinkedHashMap<String, String> data = new LinkedHashMap<>();
         data.put("ID", String.valueOf(f.id()));
         data.put("Color", f.color());
@@ -95,7 +145,6 @@ public class FilamentCommands {
         data.put("Weight", f.weight() + "g");
         data.put("Filament Type ID", String.valueOf(f.filamentTypeId()));
         
-        var typeResult = filamentService.getFilamentTypeById(f.filamentTypeId());
         if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {
             FilamentType ft = success.value();
             data.put("Type Name", ft.name());
@@ -108,22 +157,15 @@ public class FilamentCommands {
             data.put("Density", String.format("%.2f g/cm³", ft.density()));
         }
 
-        String[][] tableData = new String[data.size()][2];
-        int i = 0;
-        for (var entry : data.entrySet()) {
-            tableData[i++] = new String[] {entry.getKey(), entry.getValue()};
-        }
-
-        TableModel model = new ArrayTableModel(tableData);
-        TableBuilder tableBuilder = new TableBuilder(model);
-        return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(60);
+        return OutputFormatter.formatTable(data);
     }
 
     @ShellMethod(key = "list", value = "Lists all filaments in the collection")
-    public String listAll() {
+    public String listAll(
+        @ShellOption(value = {"-o", "--output"}, defaultValue = "TABLE", help = "Output format: table, json, or csv") OutputFormat format) {
         return filamentService.getAllFilaments().fold(
             error -> "Failed to retrieve filaments: " + error,
-            this::formatFilamentsTable
+            filaments -> formatFilaments(filaments, format)
         );
     }
 
@@ -151,15 +193,17 @@ public class FilamentCommands {
         var filament = new Filament(0, color, filamentTypeId, java.math.BigDecimal.valueOf(price), weight);
         return filamentService.addFilament(filament).fold(
             error -> "Failed to add filament: " + error,
-            value -> "Filament added successfully:\n" + formatFilamentTable(value)
+            value -> "Filament added successfully:\n" + formatFilament(value, OutputFormat.TABLE)
         );
     }
 
     @ShellMethod(key = "get", value = "Gets a filament by its id. Usage: get <id>")
-    public String getFilament(@ShellOption int id) {
+    public String getFilament(
+        @ShellOption int id,
+        @ShellOption(value = {"-o", "--output"}, defaultValue = "TABLE", help = "Output format: table, json, or csv") OutputFormat format) {
         return filamentService.getFilamentById(id).fold(
             error -> "Failed to get filament with id " + id + ": " + error,
-            this::formatFilamentTable
+            filament -> formatFilament(filament, format)
         );
     }
 
