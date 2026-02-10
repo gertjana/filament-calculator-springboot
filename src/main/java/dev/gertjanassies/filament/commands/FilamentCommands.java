@@ -3,10 +3,9 @@ package dev.gertjanassies.filament.commands;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jline.reader.LineReader;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -18,16 +17,17 @@ import org.springframework.shell.table.TableModel;
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentService;
+import dev.gertjanassies.filament.util.InputHelper;
 
 @ShellComponent
 public class FilamentCommands {
 
     private final FilamentService filamentService;
-    private final LineReader lineReader;
+    private final InputHelper inputHelper;
 
-    FilamentCommands(FilamentService filamentService, @Lazy LineReader lineReader) {
+    FilamentCommands(FilamentService filamentService, InputHelper inputHelper) {
         this.filamentService = filamentService;
-        this.lineReader = lineReader;
+        this.inputHelper = inputHelper;
     }
 
     private String formatFilamentsTable(List<Filament> filaments) {
@@ -136,43 +136,16 @@ public class FilamentCommands {
 
         // Interactive prompts if arguments not provided
         if (color == null) {
-            color = lineReader.readLine("Color: ");
+            color = inputHelper.readString("Color: ", String::trim, s -> s.length() > 2, "Color needs to be larger than 2 characters. Please enter a valid color.");
         }
         if (filamentTypeId == null) {
-            boolean validFilamentTypeId = false;
-            while (!validFilamentTypeId) {
-                try {
-                    String input = lineReader.readLine("Filament Type ID: ");
-                    filamentTypeId = Integer.parseInt(input);
-                    validFilamentTypeId = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid number format. Please enter a valid integer.");
-                }
-            }
+            filamentTypeId = inputHelper.readInteger("Filament Type ID: ");
         }
         if (price == null) {
-            boolean validPrice = false;
-            while (!validPrice) {
-                try {
-                    String input = lineReader.readLine("Price (€): ");
-                    price = Double.parseDouble(input);
-                    validPrice = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid number format. Please enter a valid decimal number.");
-                }
-            }
+            price = inputHelper.readDouble("Price (€): ");
         }
         if (weight == null) {
-            boolean validWeight = false;
-            while (!validWeight) {
-                try {
-                    String input = lineReader.readLine("Weight (grams): ");
-                    weight = Integer.parseInt(input);
-                    validWeight = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid number format. Please enter a valid integer.");
-                }
-            }
+            weight = inputHelper.readInteger("Weight (grams): ");
         }
 
         var filament = new Filament(0, color, filamentTypeId, java.math.BigDecimal.valueOf(price), weight);

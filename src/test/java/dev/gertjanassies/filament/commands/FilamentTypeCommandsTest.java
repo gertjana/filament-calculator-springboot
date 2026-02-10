@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.List;
 
-import org.jline.reader.LineReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentTypeService;
+import dev.gertjanassies.filament.util.InputHelper;
 import dev.gertjanassies.filament.util.Result;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +27,7 @@ class FilamentTypeCommandsTest {
     private FilamentTypeService filamentTypeService;
 
     @Mock
-    private LineReader lineReader;
+    private InputHelper inputHelper;
 
     private FilamentTypeCommands filamentTypeCommands;
 
@@ -35,7 +35,7 @@ class FilamentTypeCommandsTest {
 
     @BeforeEach
     void setUp() {
-        filamentTypeCommands = new FilamentTypeCommands(filamentTypeService, lineReader);
+        filamentTypeCommands = new FilamentTypeCommands(filamentTypeService, inputHelper);
         testFilamentType = new FilamentType(
             1,
             "Test PLA",

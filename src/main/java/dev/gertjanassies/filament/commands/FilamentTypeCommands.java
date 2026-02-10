@@ -3,8 +3,6 @@ package dev.gertjanassies.filament.commands;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.jline.reader.LineReader;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -15,16 +13,17 @@ import org.springframework.shell.table.TableModel;
 
 import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentTypeService;
+import dev.gertjanassies.filament.util.InputHelper;
 
 @ShellComponent
 public class FilamentTypeCommands {
 
     private final FilamentTypeService filamentTypeService;
-    private final LineReader lineReader;
+    private final InputHelper inputHelper;
 
-    FilamentTypeCommands(FilamentTypeService filamentTypeService, @Lazy LineReader lineReader) {
+    FilamentTypeCommands(FilamentTypeService filamentTypeService, InputHelper inputHelper) {
         this.filamentTypeService = filamentTypeService;
-        this.lineReader = lineReader;
+        this.inputHelper = inputHelper;
     }
 
     private String formatFilamentTypesTable(List<FilamentType> types) {
@@ -99,46 +98,28 @@ public class FilamentTypeCommands {
 
         // Interactive prompts if arguments not provided
         if (name == null) {
-            name = lineReader.readLine("Name: ");
+            name = inputHelper.readString("Name: ");
         }
         if (manufacturer == null) {
-            manufacturer = lineReader.readLine("Manufacturer: ");
+            manufacturer = inputHelper.readString("Manufacturer: ");
         }
         if (description == null) {
-            description = lineReader.readLine("Description: ");
+            description = inputHelper.readString("Description: ");
         }
         if (type == null) {
-            type = lineReader.readLine("Type (PLA/PETG/ABS/etc): ");
+            type = inputHelper.readString("Type (PLA/PETG/ABS/etc): ");
         }
         if (diameter == null) {
-            boolean validDiameter = false;
-            while (!validDiameter) {
-                try {
-                    String input = lineReader.readLine("Diameter (mm): ");
-                    diameter = Double.parseDouble(input);
-                    validDiameter = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid number format. Please enter a valid decimal number.");
-                }
-            }
+            diameter = inputHelper.readDouble("Diameter (mm): ");
         }
         if (nozzleTemp == null) {
-            nozzleTemp = lineReader.readLine("Nozzle Temperature (e.g., 190-220): ");
+            nozzleTemp = inputHelper.readString("Nozzle Temperature (e.g., 190-220): ");
         }
         if (bedTemp == null) {
-            bedTemp = lineReader.readLine("Bed Temperature (e.g., 50-60): ");
+            bedTemp = inputHelper.readString("Bed Temperature (e.g., 50-60): ");
         }
         if (density == null) {
-            boolean validDensity = false;
-            while (!validDensity) {
-                try {
-                    String input = lineReader.readLine("Density (g/cm³): ");
-                    density = Double.parseDouble(input);
-                    validDensity = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid number format. Please enter a valid decimal number.");
-                }
-            }
+            density = inputHelper.readDouble("Density (g/cm³): ");
         }
 
         var filamentType = new FilamentType(0, name, manufacturer, description, type, diameter, nozzleTemp, bedTemp, density);

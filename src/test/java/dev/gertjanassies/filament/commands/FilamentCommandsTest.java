@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.jline.reader.LineReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentService;
+import dev.gertjanassies.filament.util.InputHelper;
 import dev.gertjanassies.filament.util.Result;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,7 +29,7 @@ class FilamentCommandsTest {
     private FilamentService filamentService;
 
     @Mock
-    private LineReader lineReader;
+    private InputHelper inputHelper;
 
     private FilamentCommands filamentCommands;
 
@@ -38,7 +38,7 @@ class FilamentCommandsTest {
 
     @BeforeEach
     void setUp() {
-        filamentCommands = new FilamentCommands(filamentService, lineReader);
+        filamentCommands = new FilamentCommands(filamentService, inputHelper);
         testFilamentType = new FilamentType(
             1,
             "Test PLA",
