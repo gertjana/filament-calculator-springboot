@@ -26,22 +26,6 @@ public sealed interface Result<T, E> permits Result.Success, Result.Failure {
     /**
      * Executes the provided supplier and wraps the result in a Result.
      * Supports suppliers that throw checked exceptions.
-     * If the supplier throws an exception, it is caught and returned as a Failure with the exception message.
-     * @param supplier The code to execute (may throw checked exceptions)
-     * @param <T> The type of the successful result
-     * @return A Success containing the result, or a Failure containing the exception message
-     */
-    static <T> Result<T, String> attempt(ThrowingSupplier<T> supplier) {
-        try {
-            return new Success<>(supplier.get());
-        } catch (Exception e) {
-            return new Failure<>(e.getMessage());
-        }
-    }
-
-    /**
-     * Executes the provided supplier and wraps the result in a Result.
-     * Supports suppliers that throw checked exceptions.
      * If the supplier throws an exception, it is caught and transformed using the error mapper.
      * @param supplier The code to execute (may throw checked exceptions)
      * @param errorMapper Function to transform an exception into an error value

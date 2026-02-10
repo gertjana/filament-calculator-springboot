@@ -21,7 +21,7 @@ public class FilamentRuntimeHints implements RuntimeHintsRegistrar {
         // Register record classes for reflection (needed for Jackson serialization)
         hints.reflection()
             .registerType(Filament.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            .registerType(CostCalculation.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            .registerType(FilamentType.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+            .registerType(FilamentType.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+            .registerType(CostCalculation.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
     }
 }

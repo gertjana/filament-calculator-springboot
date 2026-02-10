@@ -334,70 +334,6 @@ class ResultTest {
     }
 
     @Test
-    void testAttemptWithSuccessfulOperation() {
-        // When
-        Result<Integer, String> result = Result.attempt(() -> 42);
-
-        // Then
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.value()).isEqualTo(42);
-    }
-
-    @Test
-    void testAttemptWithThrowingOperation() {
-        // When
-        Result<Integer, String> result = Result.attempt(() -> {
-            throw new RuntimeException("Something went wrong");
-        });
-
-        // Then
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).isEqualTo("Something went wrong");
-    }
-
-    @SuppressWarnings("null")
-    @Test
-    void testAttemptWithNullPointerException() {
-        // When
-        Result<String, String> result = Result.attempt(() -> {
-            String str = null;
-            return str.toUpperCase();
-        });
-
-        // Then
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).contains("null");
-    }
-
-    @Test
-    void testAttemptWithComplexOperation() {
-        // When
-        Result<Integer, String> result = Result.attempt(() -> {
-            int a = 10;
-            int b = 5;
-            return a / b;
-        });
-
-        // Then
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.value()).isEqualTo(2);
-    }
-
-    @Test
-    void testAttemptWithDivisionByZero() {
-        // When
-        Result<Integer, String> result = Result.attempt(() -> {
-            int a = 10;
-            int b = 0;
-            return a / b;
-        });
-
-        // Then
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).contains("by zero");
-    }
-
-    @Test
     void testOfWithSuccessfulOperation() {
         // When
         Result<Integer, Integer> result = Result.of(
@@ -441,72 +377,6 @@ class ResultTest {
     }
 
     @Test
-    void testAttemptCanBeChainedWithMap() {
-        // When
-        Result<String, String> result = Result.attempt(() -> 42)
-            .map(i -> "Number: " + i);
-
-        // Then
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.value()).isEqualTo("Number: 42");
-    }
-
-    @Test
-    void testAttemptCanBeChainedWithFlatMap() {
-        // When
-        Result<Integer, String> result = Result.attempt(() -> "123")
-            .flatMap(s -> Result.attempt(() -> Integer.parseInt(s)));
-
-        // Then
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.value()).isEqualTo(123);
-    }
-
-    @Test
-    void testAttemptChainPropagatesFailure() {
-        // When
-        Result<Integer, String> result = Result.attempt(() -> "abc")
-            .flatMap(s -> Result.attempt(() -> Integer.parseInt(s)));
-
-        // Then
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).contains("abc");
-    }
-
-    @Test
-    void testAttemptWithCheckedExceptionSuccess() {
-        // Given
-        Path tempFile = Path.of("test-file.txt");
-        
-        // When
-        Result<String, String> result = Result.attempt(() -> {
-            // This throws checked IOException
-            return Files.readString(tempFile);
-        });
-
-        // Then - file doesn't exist, so should fail
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).isNotNull();
-    }
-
-    @SuppressWarnings("unused")
-    @Test
-    void testAttemptWithCheckedExceptionIOException() {
-        // When
-        Result<String, String> result = Result.attempt(() -> {
-            // Simulating code that throws checked IOException
-            if (true) {
-                throw new IOException("File not found");
-            }
-            return "content";
-        });
-
-        // Then
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).isEqualTo("File not found");
-    }
-
-    @Test
     void testOfWithCheckedExceptionSuccess() {
         // When
         Result<byte[], String> result = Result.of(
@@ -533,19 +403,4 @@ class ResultTest {
         assertThat(result.error()).isInstanceOf(IOException.class);
     }
 
-    @Test
-    void testThrowingSupplierAllowsCheckedExceptions() {
-        // Given - this demonstrates ThrowingSupplier accepts checked exceptions
-        Result.ThrowingSupplier<String> supplier = () -> {
-            // This would not compile without ThrowingSupplier
-            throw new IOException("Checked exception");
-        };
-
-        // When
-        Result<String, String> result = Result.attempt(supplier);
-
-        // Then
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error()).isEqualTo("Checked exception");
-    }
 }

@@ -43,13 +43,13 @@ public class FileFilamentRepository implements FilamentRepository {
     }
     
     @Override
-    public Result<Filament, String> findByCode(String code) {
+    public Result<Filament, String> findById(int id) {
         return findAll()
             .flatMap(filaments -> filaments.stream()
-                .filter(f -> f.code().equals(code))
+                .filter(f -> f.id() == id)
                 .findFirst()
                 .<Result<Filament, String>>map(Result.Success::new)
-                .orElse(new Result.Failure<>("Filament not found: " + code))
+                .orElse(new Result.Failure<>("Filament not found: " + id))
             );
 }
     
@@ -68,36 +68,56 @@ public class FileFilamentRepository implements FilamentRepository {
     @Override
     public Result<Filament, String> add(Filament filament) {
         return findAll()
-            .map(filaments -> {
+            .flatMap(filaments -> {
+                // Generate next ID
+                int nextId = filaments.stream()
+                    .mapToInt(Filament::id)
+                    .max()
+                    .orElse(0) + 1;
+                
+                // Create new filament with generated ID
+                Filament newFilament = new Filament(
+                    nextId,
+                    filament.color(),
+                    filament.filamentTypeId(),
+                    filament.price(),
+                    filament.weight()
+                );
+                
                 List<Filament> updated = new ArrayList<>(filaments);
-                updated.add(filament);
-                return updated;
-            })
-            .flatMap(this::save)
-            .map(v -> filament);  // Transform Void to the added Filament
+                updated.add(newFilament);
+                
+                // Save and return the new filament directly
+                return save(updated).map(v -> newFilament);
+            });
     }
     
     @Override
     public Result<Filament, String> update(Filament filament) {
         return findAll()
-            .map(filaments -> {
+            .flatMap(filaments -> {
                 List<Filament> updated = new ArrayList<>(filaments);
+                boolean found = false;
                 for (int i = 0; i < updated.size(); i++) {
-                    if (updated.get(i).code().equals(filament.code())) {
+                    if (updated.get(i).id() == filament.id()) {
                         updated.set(i, filament);
+                        found = true;
                         break;
                     }
                 }
-                return updated;
+                if (!found) {
+                    return new Result.Failure<>("Filament not found: " + filament.id());
+                }
+                return new Result.Success<>(updated);
             })
             .flatMap(this::save)
             .map(v -> filament);  // Transform Void to the updated Filament
     }
     
     @Override
-    public Result<Void, String> deleteByCode(String code) {
+    public Result<Void, String> deleteById(int id) {
         return findAll().map(filaments -> filaments.stream()
-                .filter(f -> !f.code().equals(code))
+                .filter(f -> f.id() != id)
                 .toList())
             .flatMap(this::save);
     }

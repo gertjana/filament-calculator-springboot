@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.gertjanassies.filament.domain.Filament;
+import dev.gertjanassies.filament.domain.FilamentType;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.Result;
 
@@ -29,16 +30,26 @@ class FilamentCommandsTest {
     private FilamentCommands filamentCommands;
 
     private Filament testFilament;
+    private FilamentType testFilamentType;
 
     @BeforeEach
     void setUp() {
         filamentCommands = new FilamentCommands(filamentService);
-        testFilament = new Filament(
-            "TEST_PLA",
-            "PLA",
+        testFilamentType = new FilamentType(
+            1,
+            "Test PLA",
             "TestBrand",
+            "Test Description",
+            "PLA",
             1.75,
+            "190-220",
+            "50-60",
+            1.24
+        );
+        testFilament = new Filament(
+            1,
             "Blue",
+            1,
             new BigDecimal("25.00"),
             1000
         );
@@ -49,45 +60,20 @@ class FilamentCommandsTest {
         // Given
         List<Filament> filaments = List.of(testFilament);
         when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
+        when(filamentService.getAllFilamentTypes()).thenReturn(new Result.Success<>(List.of(testFilamentType)));
 
         // When
         String result = filamentCommands.listAll();
 
         // Then
-        assertThat(result).contains("TEST_PLA");
+        assertThat(result).contains("ID");
+        assertThat(result).contains("1");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PLA");
+        assertThat(result).contains("Manufacturer");
         assertThat(result).contains("TestBrand");
-        verify(filamentService, times(1)).getAllFilaments();
-    }
-
-    @Test
-    void testListAllSortedByManufacturerAndType() throws IOException {
-        // Given
-        Filament prusaPLA = new Filament("PPLA", "PLA", "Prusa", 1.75, "Natural", new BigDecimal("25.00"), 750);
-        Filament prusaPETG = new Filament("PPETG", "PETG", "Prusa", 1.75, "Black", new BigDecimal("28.00"), 750);
-        Filament colorfabbABS = new Filament("CF_ABS", "ABS", "ColorFabb", 1.75, "Red", new BigDecimal("35.00"), 750);
-        Filament colorfabbNGEN = new Filament("CF_nGEN", "nGEN", "ColorFabb", 1.75, "Lightgrey", new BigDecimal("35.00"), 750);
-        
-        // Unsorted list
-        List<Filament> filaments = List.of(prusaPETG, colorfabbNGEN, prusaPLA, colorfabbABS);
-        when(filamentService.getAllFilaments()).thenReturn(new Result.Success<>(filaments));
-
-        // When
-        String result = filamentCommands.listAll();
-
-        // Then
-        // Verify it's sorted by manufacturer (ColorFabb before Prusa) then by type (alphabetically)
-        int colorfabbAbsIndex = result.indexOf("CF_ABS");
-        int colorfabbNgenIndex = result.indexOf("CF_nGEN");
-        int prusaPlaIndex = result.indexOf("PPLA");
-        int prusaPetgIndex = result.indexOf("PPETG");
-        
-        // ColorFabb comes before Prusa alphabetically
-        assertThat(colorfabbAbsIndex).as("ColorFabb ABS should come first").isGreaterThan(-1);
-        assertThat(colorfabbAbsIndex).as("ColorFabb ABS before ColorFabb nGEN (ABS < nGEN)").isLessThan(colorfabbNgenIndex);
-        assertThat(colorfabbNgenIndex).as("ColorFabb nGEN before Prusa PETG").isLessThan(prusaPetgIndex);
-        assertThat(prusaPetgIndex).as("Prusa PETG before Prusa PLA (PETG < PLA alphabetically)").isLessThan(prusaPlaIndex);
-        
+        assertThat(result).contains("Color");
+        assertThat(result).contains("Blue");
         verify(filamentService, times(1)).getAllFilaments();
     }
 
@@ -107,67 +93,76 @@ class FilamentCommandsTest {
     @Test
     void testGetFilament() throws IOException {
         // Given
-        when(filamentService.getFilamentByCode("TEST_PLA")).thenReturn(new Result.Success<>(testFilament));
+        when(filamentService.getFilamentById(1)).thenReturn(new Result.Success<>(testFilament));
+        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
 
         // When
-        String result = filamentCommands.getFilament("TEST_PLA");
+        String result = filamentCommands.getFilament(1);
 
         // Then
-        assertThat(result).contains("TEST_PLA");
+        assertThat(result).contains("ID");
+        assertThat(result).contains("1");
+        assertThat(result).contains("Type");
         assertThat(result).contains("PLA");
+        assertThat(result).contains("Color");
+        assertThat(result).contains("Blue");
+        assertThat(result).contains("Price");
         assertThat(result).contains("25.00");
-        verify(filamentService, times(1)).getFilamentByCode("TEST_PLA");
+        verify(filamentService, times(1)).getFilamentById(1);
     }
 
     @Test
     void testAddFilament() throws IOException {
         // Given
-        Filament newFilament = new Filament("NEW_PLA", "PLA", "NewBrand", 1.75, "Red", new BigDecimal("30.00"), 750);
+        Filament newFilament = new Filament(2, "Red", 1, new BigDecimal("30.00"), 750);
         when(filamentService.addFilament(any(Filament.class))).thenReturn(new Result.Success<>(newFilament));
+        when(filamentService.getFilamentTypeById(1)).thenReturn(new Result.Success<>(testFilamentType));
 
         // When
         String result = filamentCommands.addFilament(
-            "NEW_PLA",
-            "NewBrand",
-            "PLA",
             "Red",
-            1.75,
+            1,
             30.00,
             750
         );
 
         // Then
-        assertThat(result).contains("NEW_PLA");
+        assertThat(result).contains("successfully");
+        assertThat(result).contains("ID");
+        assertThat(result).contains("2");
+        assertThat(result).contains("Color");
         assertThat(result).contains("Red");
-        assertThat(result).contains("NewBrand");
+        assertThat(result).contains("Manufacturer");
+        assertThat(result).contains("TestBrand");
         verify(filamentService, times(1)).addFilament(any(Filament.class));
     }
 
     @Test
     void testDeleteFilament() throws IOException {
         // Given
-        when(filamentService.deleteFilament("TEST_PLA")).thenReturn(new Result.Success<>(null));
+        when(filamentService.deleteFilament(1)).thenReturn(new Result.Success<>(null));
 
         // When
-        String result = filamentCommands.deleteFilament("TEST_PLA");
+        String result = filamentCommands.deleteFilament(1);
 
         // Then
+        assertThat(result).contains("successfully");
         assertThat(result).contains("deleted");
-        assertThat(result).contains("TEST_PLA");
-        verify(filamentService, times(1)).deleteFilament("TEST_PLA");
+        assertThat(result).contains("1");
+        verify(filamentService, times(1)).deleteFilament(1);
     }
 
     @Test
     void testGetFilamentNotFound() throws IOException {
         // Given
-        when(filamentService.getFilamentByCode("NONEXISTENT"))
-            .thenReturn(new Result.Failure<>("Filament not found: NONEXISTENT"));
+        when(filamentService.getFilamentById(999))
+            .thenReturn(new Result.Failure<>("Filament not found: 999"));
 
         // When
-        String result = filamentCommands.getFilament("NONEXISTENT");
+        String result = filamentCommands.getFilament(999);
 
         // Then
-        assertThat(result).contains("not found").contains("NONEXISTENT");
-        verify(filamentService, times(1)).getFilamentByCode("NONEXISTENT");
+        assertThat(result).contains("not found").contains("999");
+        verify(filamentService, times(1)).getFilamentById(999);
     }
 }
