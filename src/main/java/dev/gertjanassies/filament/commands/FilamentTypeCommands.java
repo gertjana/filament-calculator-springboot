@@ -3,6 +3,8 @@ package dev.gertjanassies.filament.commands;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.jline.reader.LineReader;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -18,9 +20,11 @@ import dev.gertjanassies.filament.service.FilamentTypeService;
 public class FilamentTypeCommands {
 
     private final FilamentTypeService filamentTypeService;
+    private final LineReader lineReader;
 
-    FilamentTypeCommands(FilamentTypeService filamentTypeService) {
+    FilamentTypeCommands(FilamentTypeService filamentTypeService, @Lazy LineReader lineReader) {
         this.filamentTypeService = filamentTypeService;
+        this.lineReader = lineReader;
     }
 
     private String formatFilamentTypesTable(List<FilamentType> types) {
@@ -82,16 +86,60 @@ public class FilamentTypeCommands {
         );
     }
 
-    @ShellMethod(key = "type-add", value = "Adds a new filament type. Usage: type-add <name> <manufacturer> <description> <type> <diameter> <nozzleTemp> <bedTemp> <density>")
+    @ShellMethod(key = "type-add", value = "Adds a new filament type. Usage: type-add [<name> <manufacturer> <description> <type> <diameter> <nozzleTemp> <bedTemp> <density>]")
     public String addType(
-        @ShellOption String name,
-        @ShellOption String manufacturer,
-        @ShellOption String description,
-        @ShellOption String type,
-        @ShellOption double diameter,
-        @ShellOption String nozzleTemp,
-        @ShellOption String bedTemp,
-        @ShellOption double density) {
+        @ShellOption(defaultValue = ShellOption.NULL) String name,
+        @ShellOption(defaultValue = ShellOption.NULL) String manufacturer,
+        @ShellOption(defaultValue = ShellOption.NULL) String description,
+        @ShellOption(defaultValue = ShellOption.NULL) String type,
+        @ShellOption(defaultValue = ShellOption.NULL) Double diameter,
+        @ShellOption(defaultValue = ShellOption.NULL) String nozzleTemp,
+        @ShellOption(defaultValue = ShellOption.NULL) String bedTemp,
+        @ShellOption(defaultValue = ShellOption.NULL) Double density) {
+
+        // Interactive prompts if arguments not provided
+        if (name == null) {
+            name = lineReader.readLine("Name: ");
+        }
+        if (manufacturer == null) {
+            manufacturer = lineReader.readLine("Manufacturer: ");
+        }
+        if (description == null) {
+            description = lineReader.readLine("Description: ");
+        }
+        if (type == null) {
+            type = lineReader.readLine("Type (PLA/PETG/ABS/etc): ");
+        }
+        if (diameter == null) {
+            boolean validDiameter = false;
+            while (!validDiameter) {
+                try {
+                    String input = lineReader.readLine("Diameter (mm): ");
+                    diameter = Double.parseDouble(input);
+                    validDiameter = true;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid decimal number.");
+                }
+            }
+        }
+        if (nozzleTemp == null) {
+            nozzleTemp = lineReader.readLine("Nozzle Temperature (e.g., 190-220): ");
+        }
+        if (bedTemp == null) {
+            bedTemp = lineReader.readLine("Bed Temperature (e.g., 50-60): ");
+        }
+        if (density == null) {
+            boolean validDensity = false;
+            while (!validDensity) {
+                try {
+                    String input = lineReader.readLine("Density (g/cm³): ");
+                    density = Double.parseDouble(input);
+                    validDensity = true;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid decimal number.");
+                }
+            }
+        }
 
         var filamentType = new FilamentType(0, name, manufacturer, description, type, diameter, nozzleTemp, bedTemp, density);
         return filamentTypeService.addFilamentType(filamentType).fold(
