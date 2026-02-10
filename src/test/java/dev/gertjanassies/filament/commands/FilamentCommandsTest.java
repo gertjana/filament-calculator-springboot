@@ -66,7 +66,7 @@ class FilamentCommandsTest {
         String result = filamentCommands.listAll();
 
         // Then
-        assertThat(result).contains("1");
+        assertThat(result).containsPattern("(?m)^\\s*1\\s+Blue\\b");
         assertThat(result).contains("PLA");
         assertThat(result).contains("TestBrand");
         assertThat(result).contains("Blue");
