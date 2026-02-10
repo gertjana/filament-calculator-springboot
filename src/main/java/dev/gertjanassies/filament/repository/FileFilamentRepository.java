@@ -43,13 +43,13 @@ public class FileFilamentRepository implements FilamentRepository {
     }
     
     @Override
-    public Result<Filament, String> findByCode(String code) {
+    public Result<Filament, String> findById(int id) {
         return findAll()
             .flatMap(filaments -> filaments.stream()
-                .filter(f -> f.code().equals(code))
+                .filter(f -> f.id() == id)
                 .findFirst()
                 .<Result<Filament, String>>map(Result.Success::new)
-                .orElse(new Result.Failure<>("Filament not found: " + code))
+                .orElse(new Result.Failure<>("Filament not found: " + id))
             );
 }
     
@@ -69,12 +69,33 @@ public class FileFilamentRepository implements FilamentRepository {
     public Result<Filament, String> add(Filament filament) {
         return findAll()
             .map(filaments -> {
+                // Generate next ID
+                int nextId = filaments.stream()
+                    .mapToInt(Filament::id)
+                    .max()
+                    .orElse(0) + 1;
+                
+                // Create new filament with generated ID
+                Filament newFilament = new Filament(
+                    nextId,
+                    filament.color(),
+                    filament.filamentTypeId(),
+                    filament.price(),
+                    filament.weight()
+                );
+                
                 List<Filament> updated = new ArrayList<>(filaments);
-                updated.add(filament);
+                updated.add(newFilament);
                 return updated;
             })
             .flatMap(this::save)
-            .map(v -> filament);  // Transform Void to the added Filament
+            .flatMap(v -> findAll()
+                .flatMap(filaments -> filaments.stream()
+                    .reduce((first, second) -> second)  // Get last element
+                    .<Result<Filament, String>>map(Result.Success::new)
+                    .orElse(new Result.Failure<>("Failed to retrieve added filament"))
+                )
+            );
     }
     
     @Override
@@ -83,7 +104,7 @@ public class FileFilamentRepository implements FilamentRepository {
             .map(filaments -> {
                 List<Filament> updated = new ArrayList<>(filaments);
                 for (int i = 0; i < updated.size(); i++) {
-                    if (updated.get(i).code().equals(filament.code())) {
+                    if (updated.get(i).id() == filament.id()) {
                         updated.set(i, filament);
                         break;
                     }
@@ -95,9 +116,9 @@ public class FileFilamentRepository implements FilamentRepository {
     }
     
     @Override
-    public Result<Void, String> deleteByCode(String code) {
+    public Result<Void, String> deleteById(int id) {
         return findAll().map(filaments -> filaments.stream()
-                .filter(f -> !f.code().equals(code))
+                .filter(f -> f.id() != id)
                 .toList())
             .flatMap(this::save);
     }

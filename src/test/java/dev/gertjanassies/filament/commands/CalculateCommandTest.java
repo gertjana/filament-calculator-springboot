@@ -28,97 +28,97 @@ class CalculateCommandTest {
     @Test
     void testCalculateCost() throws Exception {
         // Given
-        CostCalculation calculation = new CostCalculation("PPLA", 0.82, 24.5);
-        when(filamentService.calculateCost("PPLA", 1000.0)).thenReturn(new Result.Success<>(calculation));
+        CostCalculation calculation = new CostCalculation(1, 0.82, 24.5);
+        when(filamentService.calculateCost(1, 1000.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
-        String result = calculateCommand.calculateCost("PPLA", 1000.0);
+        String result = calculateCommand.calculateCost(1, 1000.0);
 
         // Then
-        assertThat(result).contains("PPLA");
+        assertThat(result).contains("1");
         assertThat(result).contains("0.82");
         assertThat(result).contains("24.5");
-        verify(filamentService, times(1)).calculateCost("PPLA", 1000.0);
+        verify(filamentService, times(1)).calculateCost(1, 1000.0);
     }
 
     @Test
     void testCalculateCostWithDifferentLength() throws Exception {
         // Given
-        CostCalculation calculation = new CostCalculation("PPLA", 0.41, 12.25);
-        when(filamentService.calculateCost("PPLA", 500.0)).thenReturn(new Result.Success<>(calculation));
+        CostCalculation calculation = new CostCalculation(1, 0.41, 12.25);
+        when(filamentService.calculateCost(1, 500.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
-        String result = calculateCommand.calculateCost("PPLA", 500.0);
+        String result = calculateCommand.calculateCost(1, 500.0);
 
         // Then
-        assertThat(result).contains("PPLA");
+        assertThat(result).contains("1");
         assertThat(result).contains("0.41");
         assertThat(result).contains("12.25");
-        verify(filamentService, times(1)).calculateCost("PPLA", 500.0);
+        verify(filamentService, times(1)).calculateCost(1, 500.0);
     }
 
     @Test
     void testCalculateCostWithZeroLength() throws Exception {
         // Given
-        CostCalculation calculation = new CostCalculation("PPLA", 0.0, 0.0);
-        when(filamentService.calculateCost("PPLA", 0.0)).thenReturn(new Result.Success<>(calculation));
+        CostCalculation calculation = new CostCalculation(1, 0.0, 0.0);
+        when(filamentService.calculateCost(1, 0.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
-        String result = calculateCommand.calculateCost("PPLA", 0.0);
+        String result = calculateCommand.calculateCost(1, 0.0);
 
         // Then
-        assertThat(result).contains("PPLA");
+        assertThat(result).contains("1");
         assertThat(result).contains("0.0");
-        verify(filamentService, times(1)).calculateCost("PPLA", 0.0);
+        verify(filamentService, times(1)).calculateCost(1, 0.0);
     }
 
     @Test
     void testCalculateCostFormatsCorrectly() throws Exception {
         // Given
-        CostCalculation calculation = new CostCalculation("PPLA", 1.64, 49.0);
-        when(filamentService.calculateCost("PPLA", 2000.0)).thenReturn(new Result.Success<>(calculation));
+        CostCalculation calculation = new CostCalculation(1, 1.64, 49.0);
+        when(filamentService.calculateCost(1, 2000.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
-        String result = calculateCommand.calculateCost("PPLA", 2000.0);
+        String result = calculateCommand.calculateCost(1, 2000.0);
 
         // Then
         assertThat(result).isNotEmpty();
-        assertThat(result).contains("Filament Code");
+        assertThat(result).contains("Filament ID");
         assertThat(result).contains("Cost");
         assertThat(result).contains("Weight");
-        assertThat(result).contains("PPLA");
+        assertThat(result).contains("1");
         assertThat(result).contains("1.64");
         assertThat(result).contains("49.0");
-        verify(filamentService, times(1)).calculateCost("PPLA", 2000.0);
+        verify(filamentService, times(1)).calculateCost(1, 2000.0);
     }
 
     @Test
     void testCalculateCostWithInvalidCode() throws Exception {
         // Given
-        when(filamentService.calculateCost("INVALID", 1000.0))
-            .thenReturn(new Result.Failure<>("Filament not found: INVALID"));
+        when(filamentService.calculateCost(999, 1000.0))
+            .thenReturn(new Result.Failure<>("Filament not found: 999"));
 
         // When
-        String result = calculateCommand.calculateCost("INVALID", 1000.0);
+        String result = calculateCommand.calculateCost(999, 1000.0);
 
         // Then
         assertThat(result).contains("Filament not found");
-        verify(filamentService, times(1)).calculateCost("INVALID", 1000.0);
+        verify(filamentService, times(1)).calculateCost(999, 1000.0);
     }
 
     @Test
     void testCalculateCostWithLargeLength() throws Exception {
         // Given
-        CostCalculation calculation = new CostCalculation("CF_nGEN", 12.5, 375.0);
-        when(filamentService.calculateCost("CF_nGEN", 10000.0)).thenReturn(new Result.Success<>(calculation));
+        CostCalculation calculation = new CostCalculation(2, 12.5, 375.0);
+        when(filamentService.calculateCost(2, 10000.0)).thenReturn(new Result.Success<>(calculation));
 
         // When
-        String result = calculateCommand.calculateCost("CF_nGEN", 10000.0);
+        String result = calculateCommand.calculateCost(2, 10000.0);
 
         // Then
-        assertThat(result).contains("CF_nGEN");
+        assertThat(result).contains("2");
         assertThat(result).contains("12.5");
         assertThat(result).contains("375.0");
-        verify(filamentService, times(1)).calculateCost("CF_nGEN", 10000.0);
+        verify(filamentService, times(1)).calculateCost(2, 10000.0);
     }
 }
