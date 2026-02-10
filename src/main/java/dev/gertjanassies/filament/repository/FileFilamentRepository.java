@@ -68,7 +68,7 @@ public class FileFilamentRepository implements FilamentRepository {
     @Override
     public Result<Filament, String> add(Filament filament) {
         return findAll()
-            .map(filaments -> {
+            .flatMap(filaments -> {
                 // Generate next ID
                 int nextId = filaments.stream()
                     .mapToInt(Filament::id)
@@ -86,16 +86,9 @@ public class FileFilamentRepository implements FilamentRepository {
                 
                 List<Filament> updated = new ArrayList<>(filaments);
                 updated.add(newFilament);
-                return updated;
-            })
-            .flatMap(this::save)
-            .flatMap(v -> findAll()
-                .flatMap(filaments -> filaments.stream()
-                    .reduce((first, second) -> second)  // Get last element
-                    .<Result<Filament, String>>map(Result.Success::new)
-                    .orElse(new Result.Failure<>("Failed to retrieve added filament"))
-                )
-            );
+                
+                return save(updated).map(v -> newFilament);
+            });
     }
     
     @Override
