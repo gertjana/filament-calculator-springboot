@@ -134,10 +134,10 @@ public class FilamentCommands {
             };
             
             // Delegate CSV formatting (including header escaping) to shared formatter
-            return OutputFormatter.formatCsv(headers, List.of(row));
+            return OutputFormatter.formatCsv(List.of(f), headers, rowMapper);
         }
         
-        // For TABLE format, use key-value layout
+        // For TABLE format, use key-value layout<
         LinkedHashMap<String, String> data = new LinkedHashMap<>();
         data.put("ID", String.valueOf(f.id()));
         data.put("Color", f.color());
