@@ -139,16 +139,40 @@ public class FilamentCommands {
             color = lineReader.readLine("Color: ");
         }
         if (filamentTypeId == null) {
-            String input = lineReader.readLine("Filament Type ID: ");
-            filamentTypeId = Integer.parseInt(input);
+            boolean validFilamentTypeId = false;
+            while (!validFilamentTypeId) {
+                try {
+                    String input = lineReader.readLine("Filament Type ID: ");
+                    filamentTypeId = Integer.parseInt(input);
+                    validFilamentTypeId = true;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid integer.");
+                }
+            }
         }
         if (price == null) {
-            String input = lineReader.readLine("Price (€): ");
-            price = Double.parseDouble(input);
+            boolean validPrice = false;
+            while (!validPrice) {
+                try {
+                    String input = lineReader.readLine("Price (€): ");
+                    price = Double.parseDouble(input);
+                    validPrice = true;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid decimal number.");
+                }
+            }
         }
         if (weight == null) {
-            String input = lineReader.readLine("Weight (grams): ");
-            weight = Integer.parseInt(input);
+            boolean validWeight = false;
+            while (!validWeight) {
+                try {
+                    String input = lineReader.readLine("Weight (grams): ");
+                    weight = Integer.parseInt(input);
+                    validWeight = true;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number format. Please enter a valid integer.");
+                }
+            }
         }
 
         var filament = new Filament(0, color, filamentTypeId, java.math.BigDecimal.valueOf(price), weight);
