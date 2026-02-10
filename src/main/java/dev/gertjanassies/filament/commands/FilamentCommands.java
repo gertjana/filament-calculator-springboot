@@ -12,7 +12,6 @@ import org.springframework.shell.standard.ShellOption;
 
 import dev.gertjanassies.filament.domain.Filament;
 import dev.gertjanassies.filament.domain.FilamentType;
-import dev.gertjanassies.filament.dto.FilamentListWithType;
 import dev.gertjanassies.filament.dto.FilamentWithType;
 import dev.gertjanassies.filament.service.FilamentService;
 import dev.gertjanassies.filament.util.InputHelper;
