@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.jline.reader.LineReader;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -21,9 +23,11 @@ import dev.gertjanassies.filament.service.FilamentService;
 public class FilamentCommands {
 
     private final FilamentService filamentService;
+    private final LineReader lineReader;
 
-    FilamentCommands(FilamentService filamentService) {
+    FilamentCommands(FilamentService filamentService, @Lazy LineReader lineReader) {
         this.filamentService = filamentService;
+        this.lineReader = lineReader;
     }
 
     private String formatFilamentsTable(List<Filament> filaments) {
@@ -123,12 +127,29 @@ public class FilamentCommands {
         );
     }
 
-    @ShellMethod(key = "add", value = "Adds a new filament to the collection. Usage: add <color> <filamentTypeId> <price> <weight>")
+    @ShellMethod(key = "add", value = "Adds a new filament to the collection. Usage: add [<color> <filamentTypeId> <price> <weight>]")
     public String addFilament(
-        @ShellOption String color,
-        @ShellOption int filamentTypeId,
-        @ShellOption double price,
-        @ShellOption int weight) {
+        @ShellOption(defaultValue = ShellOption.NULL) String color,
+        @ShellOption(defaultValue = ShellOption.NULL) Integer filamentTypeId,
+        @ShellOption(defaultValue = ShellOption.NULL) Double price,
+        @ShellOption(defaultValue = ShellOption.NULL) Integer weight) {
+
+        // Interactive prompts if arguments not provided
+        if (color == null) {
+            color = lineReader.readLine("Color: ");
+        }
+        if (filamentTypeId == null) {
+            String input = lineReader.readLine("Filament Type ID: ");
+            filamentTypeId = Integer.parseInt(input);
+        }
+        if (price == null) {
+            String input = lineReader.readLine("Price (€): ");
+            price = Double.parseDouble(input);
+        }
+        if (weight == null) {
+            String input = lineReader.readLine("Weight (grams): ");
+            weight = Integer.parseInt(input);
+        }
 
         var filament = new Filament(0, color, filamentTypeId, java.math.BigDecimal.valueOf(price), weight);
         return filamentService.addFilament(filament).fold(

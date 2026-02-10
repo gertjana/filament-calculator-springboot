@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.List;
 
+import org.jline.reader.LineReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,13 +26,16 @@ class FilamentTypeCommandsTest {
     @Mock
     private FilamentTypeService filamentTypeService;
 
+    @Mock
+    private LineReader lineReader;
+
     private FilamentTypeCommands filamentTypeCommands;
 
     private FilamentType testFilamentType;
 
     @BeforeEach
     void setUp() {
-        filamentTypeCommands = new FilamentTypeCommands(filamentTypeService);
+        filamentTypeCommands = new FilamentTypeCommands(filamentTypeService, lineReader);
         testFilamentType = new FilamentType(
             1,
             "Test PLA",

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.jline.reader.LineReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,9 @@ class FilamentCommandsTest {
     @Mock
     private FilamentService filamentService;
 
+    @Mock
+    private LineReader lineReader;
+
     private FilamentCommands filamentCommands;
 
     private Filament testFilament;
@@ -34,7 +38,7 @@ class FilamentCommandsTest {
 
     @BeforeEach
     void setUp() {
-        filamentCommands = new FilamentCommands(filamentService);
+        filamentCommands = new FilamentCommands(filamentService, lineReader);
         testFilamentType = new FilamentType(
             1,
             "Test PLA",
