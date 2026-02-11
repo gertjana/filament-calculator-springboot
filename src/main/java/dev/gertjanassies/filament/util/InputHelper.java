@@ -130,4 +130,55 @@ public class InputHelper {
             3
         );
     }
+
+    /**
+     * Display a numbered list of options and let the user select one.
+     * 
+     * @param <T> The type of items in the list
+     * @param prompt The prompt text to display
+     * @param options The list of options to choose from
+     * @param displayFunction Function to convert each item to a display string
+     * @return The selected item
+     * @throws IllegalStateException if the list is empty or user fails to select after max attempts
+     * 
+     * @example
+     * FilamentType selected = inputHelper.selectFromList(
+     *     "Select filament type",
+     *     filamentTypes,
+     *     ft -> ft.manufacturer() + " - " + ft.name()
+     * );
+     */
+    public <T> T selectFromList(String prompt, java.util.List<T> options, Function<T, String> displayFunction) {
+        if (options.isEmpty()) {
+            throw new IllegalStateException("Cannot select from an empty list.");
+        }
+
+        System.out.println("\n" + prompt + ":");
+        for (int i = 0; i < options.size(); i++) {
+            System.out.println("  " + (i + 1) + ". " + displayFunction.apply(options.get(i)));
+        }
+
+        Integer selection = readInput(
+            "\nEnter selection (1-" + options.size() + "): ",
+            Integer::parseInt,
+            s -> s >= 1 && s <= options.size(),
+            "Invalid selection. Please enter a number between 1 and " + options.size() + ".",
+            3
+        );
+        
+        return options.get(selection - 1);
+    }
+    
+    /**
+     * Display a numbered list of options and let the user select one.
+     * Uses toString() for display.
+     * 
+     * @param <T> The type of items in the list
+     * @param prompt The prompt text to display
+     * @param options The list of options to choose from
+     * @return The selected item
+     */
+    public <T> T selectFromList(String prompt, java.util.List<T> options) {
+        return selectFromList(prompt, options, Object::toString);
+    }
 }

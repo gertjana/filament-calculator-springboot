@@ -189,7 +189,21 @@ public class FilamentCommands {
             color = inputHelper.readString("Color: ", String::trim, s -> s.length() > 2, "Color needs to be larger than 2 characters. Please enter a valid color.");
         }
         if (filamentTypeId == null) {
-            filamentTypeId = inputHelper.readInteger("Filament Type ID: ");
+            // Fetch available filament types and let user select
+            var typesResult = filamentService.getAllFilamentTypes();
+            if (typesResult.isFailure()) {
+                return "Failed to load filament types: " + typesResult.error();
+            }
+            var types = typesResult.value();
+            if (types.isEmpty()) {
+                return "No filament types available. Please add a filament type first using 'type-add'.";
+            }
+            var selectedType = inputHelper.selectFromList(
+                "Select filament type",
+                types,
+                ft -> ft.manufacturer() + " - " + ft.name() + " (" + ft.type() + ")"
+            );
+            filamentTypeId = selectedType.id();
         }
         if (price == null) {
             price = inputHelper.readDouble("Price (€): ");
