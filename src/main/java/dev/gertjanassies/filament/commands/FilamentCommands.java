@@ -54,10 +54,11 @@ public class FilamentCommands {
             return OutputFormatter.formatJson(filamentsWithType);
         }
 
-        String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
+        String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight", "Price/kg"};
 
         Function<Filament, String[]> rowMapper = f -> {
             FilamentType ft = typeMap.get(f.filamentTypeId());
+            double pricePerKg = (f.price().doubleValue() / f.weight()) * 1000;
             if (ft != null) {
                 return new String[] {
                     String.valueOf(f.id()),
@@ -70,7 +71,8 @@ public class FilamentCommands {
                     String.format("%.2f", ft.density()),
                     f.color(),
                     String.format("€%.2f", f.price()),
-                    f.weight() + "g"
+                    f.weight() + "g",
+                    String.format("€%.2f/kg", pricePerKg)
                 };
             } else {
                 return new String[] {
@@ -78,7 +80,8 @@ public class FilamentCommands {
                     "?", "?", "?", "?", "?", "?", "?",
                     f.color(),
                     String.format("€%.2f", f.price()),
-                    f.weight() + "g"
+                    f.weight() + "g",
+                    String.format("€%.2f/kg", pricePerKg)
                 };
             }
         };
@@ -104,9 +107,10 @@ public class FilamentCommands {
         
         if (format == OutputFormat.CSV) {
             // For CSV, use same format as list (single row)
-            String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight"};
+            String[] headers = {"ID", "Name", "Manufacturer", "Type", "Diameter", "Nozzle Temp", "Bed Temp", "Density", "Color", "Price", "Weight", "Price/kg"};
             
             Function<Filament, String[]> rowMapper = filament -> {
+                double pricePerKg = (filament.price().doubleValue() / filament.weight()) * 1000;
                 if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {
                     FilamentType ft = success.value();
                     return new String[] {
@@ -120,7 +124,8 @@ public class FilamentCommands {
                         String.format("%.2f", ft.density()),
                         filament.color(),
                         String.format("€%.2f", filament.price()),
-                        filament.weight() + "g"
+                        filament.weight() + "g",
+                        String.format("€%.2f/kg", pricePerKg)
                     };
                 } else {
                     return new String[] {
@@ -128,7 +133,8 @@ public class FilamentCommands {
                         "?", "?", "?", "?", "?", "?", "?",
                         filament.color(),
                         String.format("€%.2f", filament.price()),
-                        filament.weight() + "g"
+                        filament.weight() + "g",
+                        String.format("€%.2f/kg", pricePerKg)
                     };
                 }
             };
@@ -143,6 +149,8 @@ public class FilamentCommands {
         data.put("Color", f.color());
         data.put("Price", String.format("€%.2f", f.price()));
         data.put("Weight", f.weight() + "g");
+        double pricePerKg = (f.price().doubleValue() / f.weight()) * 1000;
+        data.put("Price/kg", String.format("€%.2f/kg", pricePerKg));
         data.put("Filament Type ID", String.valueOf(f.filamentTypeId()));
         
         if (typeResult instanceof dev.gertjanassies.filament.util.Result.Success<FilamentType, String> success) {

@@ -224,9 +224,9 @@ class FilamentCommandsTest {
 
         // Then
         // Verify CSV headers
-        assertThat(result).contains("ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight");
+        assertThat(result).contains("ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight,Price/kg");
         // Verify CSV row content
-        assertThat(result).contains("1,Test PLA,TestBrand,PLA,1.75 mm,190-220°C,50-60°C,1.24,Blue,€25.00,1000g");
+        assertThat(result).contains("1,Test PLA,TestBrand,PLA,1.75 mm,190-220°C,50-60°C,1.24,Blue,€25.00,1000g,€25.00/kg");
         verify(filamentService, times(1)).getAllFilaments();
         verify(filamentService, times(1)).getAllFilamentTypes();
     }
@@ -306,9 +306,9 @@ class FilamentCommandsTest {
 
         // Then
         // Verify CSV headers
-        assertThat(result).contains("ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight");
+        assertThat(result).contains("ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight,Price/kg");
         // Verify CSV row content
-        assertThat(result).contains("1,Test PLA,TestBrand,PLA,1.75 mm,190-220°C,50-60°C,1.24,Blue,€25.00,1000g");
+        assertThat(result).contains("1,Test PLA,TestBrand,PLA,1.75 mm,190-220°C,50-60°C,1.24,Blue,€25.00,1000g,€25.00/kg");
         verify(filamentService, times(1)).getFilamentById(1);
         verify(filamentService, times(1)).getFilamentTypeById(1);
     }

@@ -227,16 +227,16 @@ ID,Name,Manufacturer,Description,Type,Diameter,Nozzle Temp,Bed Temp,Density
 **Filaments (with flattened type information):**
 ```bash
 ~> filament list --output csv
-ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight
-1,Prusa PLA,Prusa,PLA,1.75 mm,190-220°C,50-60°C,1.24,Natural,€24.99,1000g
-9,Fiberlogy Easy PLA,Fiberlogy,PLA,1.75 mm,190-220°C,50-60°C,1.24,Mineral marble,€25.00,850g
+ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight,Price/kg
+1,Prusa PLA,Prusa,PLA,1.75 mm,190-220°C,50-60°C,1.24,Natural,€24.99,1000g,€24.99/kg
+9,Fiberlogy Easy PLA,Fiberlogy,PLA,1.75 mm,190-220°C,50-60°C,1.24,Mineral marble,€25.00,850g,€29.41/kg
 ```
 
 **Single filament (same format as list):**
 ```bash
 ~> filament get 9 -o csv
-ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight
-9,Fiberlogy Easy PLA,Fiberlogy,PLA,1.75 mm,190-220°C,50-60°C,1.24,Mineral marble,€25.00,850g
+ID,Name,Manufacturer,Type,Diameter,Nozzle Temp,Bed Temp,Density,Color,Price,Weight,Price/kg
+9,Fiberlogy Easy PLA,Fiberlogy,PLA,1.75 mm,190-220°C,50-60°C,1.24,Mineral marble,€25.00,850g,€29.41/kg
 ```
 
 #### Adding and Listing Filament Spools
@@ -278,13 +278,13 @@ Filament added successfully:
 
 ```bash
 ~> filament list
-┌──┬──────────────────┬────────────┬──────┬────────┬───────────┬─────────┬────────┬──────────────┬──────┬──────┐
-│ID│Name              │Manufacturer│Type  │Diameter│Nozzle Temp│Bed Temp │Density │Color         │Price │Weight│
-├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
-│1 │Prusa PLA         │Prusa       │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Natural       │€24.99│1000g │
-├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┤
-│9 │Fiberlogy Easy PLA│Fiberlogy   │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Mineral marble│€25.00│850g  │
-└──┴──────────────────┴────────────┴──────┴────────┴───────────┴─────────┴────────┴──────────────┴──────┴──────┘
+┌──┬──────────────────┬────────────┬──────┬────────┬───────────┬─────────┬────────┬──────────────┬──────┬──────┬──────────┐
+│ID│Name              │Manufacturer│Type  │Diameter│Nozzle Temp│Bed Temp │Density │Color         │Price │Weight│Price/kg  │
+├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┼──────────┤
+│1 │Prusa PLA         │Prusa       │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Natural       │€24.99│1000g │€24.99/kg │
+├──┼──────────────────┼────────────┼──────┼────────┼───────────┼─────────┼────────┼──────────────┼──────┼──────┼──────────┤
+│9 │Fiberlogy Easy PLA│Fiberlogy   │PLA   │1.75 mm │190-220°C  │50-60°C  │1.24    │Mineral marble│€25.00│850g  │€29.41/kg │
+└──┴──────────────────┴────────────┴──────┴────────┴───────────┴─────────┴────────┴──────────────┴──────┴──────┴──────────┘
 ```
 
 #### Calculating Print Cost
