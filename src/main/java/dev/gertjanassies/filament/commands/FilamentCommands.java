@@ -236,4 +236,61 @@ public class FilamentCommands {
             value -> "Filament deleted successfully: " + id
         );
     }
+
+    @ShellMethod(key = "available", value = "Shows available filaments with just type and color (perfect for sharing)")
+    public String showAvailable() {
+        return filamentService.getAllFilaments().fold(
+            error -> "Failed to retrieve filaments: " + error,
+            filaments -> {
+                if (filaments.isEmpty()) {
+                    return "No filaments available.";
+                }
+
+                // Fetch all filament types
+                Map<Integer, FilamentType> typeMap = filamentService.getAllFilamentTypes()
+                    .map(types -> types.stream()
+                        .collect(Collectors.toMap(FilamentType::id, type -> type)))
+                    .fold(
+                        error -> Map.<Integer, FilamentType>of(),
+                        types -> types
+                    );
+
+                // Group by filament type and collect colors
+                record NameTypeKey(String name, String type) {}
+                Map<NameTypeKey, List<String>> grouped = filaments.stream()
+                    .collect(Collectors.groupingBy(
+                        f -> {
+                            FilamentType ft = typeMap.get(f.filamentTypeId());
+                            String name = ft != null ? ft.name() : "Unknown";
+                            String type = ft != null ? ft.type() : "Unknown";
+                            return new NameTypeKey(name, type);
+                        },
+                        Collectors.mapping(Filament::color, Collectors.toList())
+                    ));
+
+                // Convert to sorted list
+                record NameTypeColors(String name, String type, String colors) {}
+                List<NameTypeColors> rows = grouped.entrySet().stream()
+                    .map(e -> {
+                        String colors = e.getValue().stream()
+                            .sorted()
+                            .collect(Collectors.joining(", "));
+                        return new NameTypeColors(e.getKey().name(), e.getKey().type(), colors);
+                    })
+                    .sorted(java.util.Comparator.comparing(NameTypeColors::name)
+                        .thenComparing(NameTypeColors::type))
+                    .toList();
+
+                // Build table
+                String[] headers = {"Name", "Type", "Colors"};
+                Function<NameTypeColors, String[]> rowMapper = ntc -> new String[] {
+                    ntc.name(),
+                    ntc.type(),
+                    ntc.colors()
+                };
+
+                return OutputFormatter.formatTable(rows, headers, rowMapper);
+            }
+        );
+    }
 }

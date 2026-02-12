@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Suppress logback's own status messages -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    
+    <!-- File appender for all logs -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${user.home}/.filament/filament.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${user.home}/.filament/filament.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>50MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Console appender - only for application output, no Spring logs -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Send all Spring/framework logs to file only -->
+    <logger name="org.springframework" level="ERROR" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+    
+    <logger name="org.springframework.boot" level="ERROR" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+    
+    <!-- Root logger: console for app, file for errors -->
+    <root level="ERROR">
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
