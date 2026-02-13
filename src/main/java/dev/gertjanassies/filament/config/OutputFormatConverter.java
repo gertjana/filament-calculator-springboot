@@ -1,6 +1,9 @@
 package dev.gertjanassies.filament.config;
 
+import java.util.Locale;
+
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import dev.gertjanassies.filament.util.OutputFormat;
@@ -13,9 +16,9 @@ import dev.gertjanassies.filament.util.OutputFormat;
 public class OutputFormatConverter implements Converter<String, OutputFormat> {
 
     @Override
-    public OutputFormat convert(String source) {
+    public OutputFormat convert(@NonNull String source) {
         try {
-            return OutputFormat.valueOf(source.toUpperCase());
+            return OutputFormat.valueOf(source.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
                 "Invalid output format: '" + source + "'. Valid options are: table, json, csv (case-insensitive)");

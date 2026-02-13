@@ -135,6 +135,11 @@ public sealed interface Result<T, E> permits Result.Success, Result.Failure {
 
     /** 
      * Fold the Result into a single value by providing functions to handle both success and failure cases.
+     * If this is a Success, the onSuccess function is applied to the value. If this is a Failure, the onFailure function is applied to the error.
+     * @param onFailure The function to handle the failure case
+     * @param onSuccess The function to handle the success case
+     * @param <R> The type of the result of the fold operation
+     * @return The result of applying the appropriate function based on whether this is a Success or a Failure
      */
     default <R> R fold(Function<E, R> onFailure, Function<T, R> onSuccess) {
         return switch (this) {
